@@ -11,18 +11,19 @@
 #define gravity 0.05
 #define speed 100 //default: 100
 
-#define canvasx 100
-#define canvasy 35
+#define canvasx 100 //canvas width
+#define canvasy 35 //canvas height
 
-#define birdx 10
-#define birdpixels 14
+#define birdx 10 //bird location from the left
+#define birdpixels 14 //a constant
 
-#define barWidth 8
-#define barGap 10
+#define barWidth 8 //width of a single barrier
+#define barGap 10 //gap between top and bottom barriers
 
 bool barStatus = false;
 
 struct timeval lastCheck, actTime;
+
 
 typedef struct{
   float y;
