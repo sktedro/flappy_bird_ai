@@ -2,6 +2,7 @@
 #include "ai_getWeights.h"
 
 #define ai 1
+#define aiDebug 0
 
 bool ai_jump(){
   float decision = 
@@ -25,10 +26,14 @@ int main(int argc, char **argv){
     setting = atoi(argv[2]);
     if(!ai_getWeights(batch, setting))
       return -1;
-    printf("birdSpeedW = %g\nbirdHeightW = %g\ncanvasHeightW = %g\ndistanceToBarW = %g\nbarHeightW = %g\n", 
-        ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW);
+    if(aiDebug){
+      if(aiDebug)
+        printf("File: %s\n", filename);
+      printf("birdSpeedW = %g\nbirdHeightW = %g\ncanvasHeightW = %g\ndistanceToBarW = %g\nbarHeightW = %g\n", 
+          ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW);
+      return 0;
+    }
   }
-  return 0;
 
   char canvas[canvasx][canvasy];
   Bird bird;
@@ -79,6 +84,13 @@ int main(int argc, char **argv){
           ai_canvasHeight, ai_birdSpeed, ai_birdHeight, ai_distanceToBar, ai_barHeight);
     }
   }
+
+  if(ai && score > 0){
+    //FILE *f = fopen(filename, "a");
+
+
+  }
+
   freeBirdPixels(bird);
   return 0;
 }

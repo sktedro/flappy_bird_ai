@@ -1,29 +1,32 @@
 float ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW;
 
+char filename[] = "./data/weightsXXX_input";
+
 bool ai_getWeights(int batch, int setting){
   FILE *f;
   char *buffer;
   size_t bufferSize;
-  char filename[] = "./data/weightsXXX_input";
-  if(batch == 1){
-    filename[14] = filename[15] = '0';
-    filename[16] = '1';
-  }else if(batch == 2){
 
-  }
+  int hundreds = batch/100;
+  int tens = (batch - 100*hundreds)/10;
+  filename[14] = hundreds + '0';
+  filename[15] = tens + '0';
+  filename[16] = (batch - 100*hundreds - 10*tens) + '0';
 
   f = fopen(filename, "r");
   if(!f){
     printf("Error locating %s.\n", filename);
-    fclose(f);
     return false;
   }
 
   //Get to the desired line
   for(int i = 0; i < setting - 1; i++){
     char c = ' ';
-    while(c != '\n' && c != EOF)
+    while(c != '\n'){
       c = fgetc(f);
+      if(c == EOF)
+        break;
+    }
   }
 
   char *line = malloc(1000);
@@ -37,6 +40,8 @@ bool ai_getWeights(int batch, int setting){
 
   char delim = ';';
   char *token = strtok(line, &delim);
+  if(!token || token[0] == EOF)
+    return false;
   ai_birdSpeedW = strtof(token, NULL);
   token = strtok(NULL, &delim);
   ai_birdHeightW = strtof(token, NULL);
