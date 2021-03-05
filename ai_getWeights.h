@@ -1,6 +1,6 @@
 float ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW;
 
-char filename[] = "./data/weightsXXX_input";
+char filename[] = "./data/weightsXXX_i";
 
 bool ai_getWeights(int batch, int setting){
   FILE *f;
