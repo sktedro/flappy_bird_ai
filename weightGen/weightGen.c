@@ -7,7 +7,7 @@
 
 float ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW;
 
-char filename[] = "../data/weightsXXX_i";
+char filename[] = "./data/weightsXXX_i";
 
 int main(int argc, char **argv){
   if(argc < 3){
@@ -24,9 +24,9 @@ int main(int argc, char **argv){
 
   int hundreds = batch/100;
   int tens = (batch - 100*hundreds)/10;
-  filename[15] = hundreds + '0';
-  filename[16] = tens + '0';
-  filename[17] = (batch - 100*hundreds - 10*tens) + '0';
+  filename[14] = hundreds + '0';
+  filename[15] = tens + '0';
+  filename[16] = (batch - 100*hundreds - 10*tens) + '0';
 
   FILE *f;
   f = fopen(filename, "a");

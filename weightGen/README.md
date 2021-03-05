@@ -1,5 +1,5 @@
-The weight generation algorithm must be started from it's folder:
-./weightGen [batch] [how many]
+The weight generation algorithm must be started from it's PARENT folder:
+./weightGen/weightGen [batch] [how many]
 
 It generates weights into ../data/weightsXXX_i in format:
 float;float;float;float;float
