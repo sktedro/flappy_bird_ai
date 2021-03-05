@@ -31,7 +31,7 @@ in="_i"
 inputPath=$str1$str2$in
 recordsPath=$str1$str2$out
 
-weightGenPath="./weightGen/weightGen"
+weightGenPath="./wgen/wgen"
 
 #eval touch $recordsPath
 #eval touch $inputPath
