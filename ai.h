@@ -2,6 +2,18 @@ float ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_bar
 
 char filename[] = "./data/weightsXXX_i";
 
+bool ai_jump(){
+  float decision =
+    ai_birdSpeed * ai_birdSpeedW +
+    ai_birdHeight * ai_birdHeightW/10 +
+    ai_canvasHeight * ai_canvasHeightW/50 +
+    ai_distanceToBar * ai_distanceToBarW/20 +
+    ai_barHeight * ai_barHeightW/10;
+  if(decision > 0.5 * 5)
+    return true;
+  return false;
+}
+
 bool ai_getWeights(int batch, int setting){
   FILE *f;
   char *buffer;

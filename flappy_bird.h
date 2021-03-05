@@ -8,9 +8,14 @@
 #include <curses.h> 
 #include <math.h> 
 
-#include "ai_data.h"
 #include "settings.h"
 
+float ai_birdSpeed;
+float ai_birdHeight;
+int ai_canvasHeight;
+
+float ai_distanceToBar;
+int ai_barHeight;
 
 struct timeval lastCheck, actTime;
 

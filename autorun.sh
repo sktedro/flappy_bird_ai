@@ -2,6 +2,11 @@
 
 batch=$1
 
+if [ -z "$1" ]; then
+  echo "Check arguments"
+  exit
+fi
+
 str1="./data/weights"
 if [ $batch -le 9 ]
 then
@@ -23,5 +28,4 @@ lines=$(echo $lines | cut -d' ' -f 1)
 
 for i in $(seq 1 $lines ); do
   eval ./main $batch $i
-  sleep=0.1
 done

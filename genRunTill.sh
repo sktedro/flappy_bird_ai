@@ -3,6 +3,15 @@
 batch=$1
 wantedRecords=$2
 
+if [ -z "$1" ]; then
+  echo "Check arguments"
+  exit
+fi
+if [ -z "$2" ]; then
+  echo "Check arguments"
+  exit
+fi
+
 str1="./data/weights"
 if [ $batch -le 9 ]
 then
@@ -27,14 +36,11 @@ weightGenPath="./weightGen/weightGen"
 lines=`wc -l $records`
 lines=$(echo $lines | cut -d' ' -f 1)
 
-echo $lines $wantedRecords
 while [ $lines -le $wantedRecords ]; do
+  lines=`wc -l $records`
+  lines=$(echo $lines | cut -d' ' -f 1)
   eval touch $input
-  sleep=0.1
   eval $weightGenPath $batch 100
-  sleep=0.1
   eval sh autorun.sh $batch
-  sleep=0.1
   eval rm $input
-  sleep=0.1
 done
