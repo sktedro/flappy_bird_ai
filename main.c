@@ -1,40 +1,19 @@
 #include "flappy_bird.h"
-#include "ai_getWeights.h"
+#include "ai_weightsIO.h"
 
-#define ai 0
+#define ai 1
 #define aiDebug 0
 
 bool ai_jump(){
   float decision = 
     ai_birdSpeed * ai_birdSpeedW +
-    ai_birdHeight * ai_birdHeightW +
-    ai_canvasHeight * ai_canvasHeightW +
-    ai_distanceToBar * ai_distanceToBarW +
-    ai_barHeight * ai_barHeightW;
+    ai_birdHeight * ai_birdHeightW/10 +
+    ai_canvasHeight * ai_canvasHeightW/50 +
+    ai_distanceToBar * ai_distanceToBarW/20 +
+    ai_barHeight * ai_barHeightW/10;
   if(decision > 0.5 * 5)
     return true;
   return false;
-}
-
-void ai_printWeights(int score){
-  filename[18] = 'o';
-  FILE *f = fopen(filename, "a");
-  char *buffer = malloc(100);
-  snprintf(buffer, 20, "%d;", score);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f;", ai_birdSpeedW);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f;", ai_birdHeightW);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f;", ai_canvasHeightW);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f;", ai_distanceToBarW);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f", ai_barHeightW);
-  fputs(buffer, f);
-  fputc('\n', f);
-  fclose(f);
-  free(buffer);
 }
 
 int main(int argc, char **argv){

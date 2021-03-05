@@ -57,3 +57,25 @@ bool ai_getWeights(int batch, int setting){
   fclose(f);
   return true;
 }
+
+void ai_printWeights(int score){
+  filename[18] = 'o';
+  FILE *f = fopen(filename, "a");
+  char *buffer = malloc(100);
+  snprintf(buffer, 20, "%d;", score);
+  fputs(buffer, f);
+  snprintf(buffer, 20, "%f;", ai_birdSpeedW);
+  fputs(buffer, f);
+  snprintf(buffer, 20, "%f;", ai_birdHeightW);
+  fputs(buffer, f);
+  snprintf(buffer, 20, "%f;", ai_canvasHeightW);
+  fputs(buffer, f);
+  snprintf(buffer, 20, "%f;", ai_distanceToBarW);
+  fputs(buffer, f);
+  snprintf(buffer, 20, "%f", ai_barHeightW);
+  fputs(buffer, f);
+  fputc('\n', f);
+  fclose(f);
+  free(buffer);
+}
+
