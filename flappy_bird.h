@@ -103,8 +103,9 @@ bool jump(){
 }
 
 void newBar(Barrier *bar){
-  bar->highy = rand()%(canvasy - 2*barGap) + barGap;
-  bar->lowy = bar->highy - barGap;
+  ai_barHeight = rand()%(canvasy - 2*barGap) + barGap;
+  bar->highy = ai_barHeight + barGap/2;
+  bar->lowy = ai_barHeight - barGap/2;
   bar->x1 = bar->x1 = canvasx - 1;
   bar->x2 = bar->x2 = canvasx + barWidth;
 }
