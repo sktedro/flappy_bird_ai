@@ -18,7 +18,7 @@ bool ai_jump(){
 
 void ai_printWeights(int score){
   filename[18] = 'o';
-  FILE *f = fopen("./sup", "a");
+  FILE *f = fopen(filename, "a");
   char *buffer = malloc(100);
   snprintf(buffer, 20, "%d;", score);
   fputs(buffer, f);
