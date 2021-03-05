@@ -18,8 +18,7 @@ int main(int argc, char **argv){
     if(!ai_getWeights(batch, setting))
       return -1;
     if(aiDebug){
-      if(aiDebug)
-        printf("File: %s\n", filename);
+      printf("File: %s\n", filename);
       printf("birdSpeedW = %g\nbirdHeightW = %g\ncanvasHeightW = %g\ndistanceToBarW = %g\nbarHeightW = %g\n", 
           ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW);
       return 0;
@@ -43,7 +42,7 @@ int main(int argc, char **argv){
   bool gameOver = false;
 
   while(1){
-    if(!ai && jump() || ai && ai_jump())
+    if((!ai && jump()) || (ai && ai_jump()))
       bird.fall_speed = -jumpHeight;
 
     if(!checkBird(bird, &bar, &score))
@@ -59,21 +58,29 @@ int main(int argc, char **argv){
       gettimeofday(&lastCheck, NULL);
       bird.fall_speed += timediff/4.0 + 0.3;
       bird.y = bird.y + bird.fall_speed;
-      ai_birdSpeed = bird.fall_speed;
-      ai_birdHeight = bird.y;
+      if(ai){
+        ai_birdSpeed = bird.fall_speed;
+        ai_birdHeight = bird.y;
+      }
 
       //update canvas in memory
       updateBird(&bird);
       updateBar(&bar);
 
-      ai_distanceToBar = (bar.x1 + bar.x2)/2 - birdx;
+      if(ai){
+        ai_distanceToBar = (bar.x1 + bar.x2)/2 - birdx;
+      }
 
       //print updaged canvas
-      if(!background)
+      if(!background){
         printCanvas(canvas, bird, bar);
+      }
+
       printf("\nScore = %d\n\n", score);
-      printf("Canvas Height: %d\nSpeed: %g\nHeight: %g\nDistance to next bar: %g\nNext bar height: %d\n",
-          ai_canvasHeight, ai_birdSpeed, ai_birdHeight, ai_distanceToBar, ai_barHeight);
+      if(!background){
+        printf("Canvas Height: %d\nSpeed: %g\nHeight: %g\nDistance to next bar: %g\nNext bar height: %d\n",
+            ai_canvasHeight, ai_birdSpeed, ai_birdHeight, ai_distanceToBar, ai_barHeight);
+      }
     }
   }
 
