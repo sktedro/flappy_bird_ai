@@ -1,4 +1,0 @@
-  while true; do \
-    inotifywait -qr -e modify ./*; \
-    make; \
-  done

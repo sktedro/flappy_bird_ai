@@ -95,8 +95,8 @@ void freeAll(Line *line, int lines){
 
 int main(int argc, char **argv){
   if(argc < 2){
-    printf("./sortOut [path to file]\n");
-    printf("eg.: './sortOut ../data/weights001.o'\n");
+    printf("./sort [path to file]\n");
+    printf("eg.: './sort ../data/weights001.o'\n");
     return -1;
   }
   //printf("%s\n", argv[1]);

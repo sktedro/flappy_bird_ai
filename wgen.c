@@ -109,7 +109,7 @@ int main(int argc, char **argv){
   if(batch != 1){
     f_o = fopen(filename_o, "r");
     if(!f_o){
-      printf("weightGen.c: Error locating %s.\n", filename_o);
+      printf("wgen.c: Error locating %s.\n", filename_o);
       return -1;
     }
   }

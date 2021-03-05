@@ -24,3 +24,13 @@ Outputs from the batch will be in the same folder and under the name
 first batch, the ones that cross the first barrier) and each line will be:
 score, ai_birdSpeed, ai_birdHeight, ai_canvasHeight, ai_distanceToBar and ai_barHeight
 while "score" is the score that the AI achieved with those weights.
+
+
+
+Weight generator:
+
+The weight generation algorithm must be started from it's PARENT folder: ./weightGen/weightGen [batch] [how many]
+
+It generates weights into ../data/weightsXXX_i in format: float;float;float;float;float
+
+For batches higher than 1 it takes data from previous batch (weightsXXX_o).

@@ -31,7 +31,7 @@ in="_i"
 inputPath=$str1$str2$in
 recordsPath=$str1$str2$out
 
-weightGenPath="./wgen/wgen"
+weightGenPath="./build/wgen"
 
 #eval touch $recordsPath
 #eval touch $inputPath
@@ -48,7 +48,7 @@ while [ $recordLines -lt $wantedRecords ]; do
   inputLines=$(echo $inputLines | cut -d' ' -f 1)
 
   for i in $(seq 1 $inputLines ); do
-    eval ./main $batch $i
+    eval ./build/main $batch $i
   done
 
   eval rm -f $inputPath
