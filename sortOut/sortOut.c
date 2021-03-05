@@ -99,7 +99,7 @@ int main(int argc, char **argv){
     printf("eg.: './sortOut ../data/weights001.o ../data/weights002.i'\n");
     return -1;
   }
-  printf("%s\n", argv[1]);
+  //printf("%s\n", argv[1]);
   FILE *f = fopen(argv[1], "r");
   if(!f){
     printf("File not found\n");
