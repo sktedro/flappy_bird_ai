@@ -8,8 +8,10 @@
 int main(int argc, char **argv){
   int batch, setting;
   if(ai){
-    if(argc < 3)
+    if(argc < 3){
+      printf("main.c: Too few arguments\n");
       return -1;
+    }
     ai_canvasHeight = canvasy;
     batch = atoi(argv[1]);
     setting = atoi(argv[2]);

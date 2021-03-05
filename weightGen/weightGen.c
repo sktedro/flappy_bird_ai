@@ -106,10 +106,12 @@ int main(int argc, char **argv){
     f_i = fopen(filename_i, "a");
   }
 
-  f_o = fopen(filename_o, "r");
-  if(!f_o){
-    printf("Error locating %s.\n", filename_o);
-    return -1;
+  if(batch != 1){
+    f_o = fopen(filename_o, "r");
+    if(!f_o){
+      printf("weightGen.c: Error locating %s.\n", filename_o);
+      return -1;
+    }
   }
 
   char *buffer = malloc(100);
@@ -134,6 +136,7 @@ int main(int argc, char **argv){
     }
   }
   fclose(f_i);
-  fclose(f_o);
+  if(batch != 1)
+    fclose(f_o);
   free(buffer);
 }

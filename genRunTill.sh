@@ -47,5 +47,5 @@ while [ $lines -le $wantedRecords ]; do
     eval ./main $batch $i
   done
 
-  eval rm $input
+  eval rm -f $input
 done
