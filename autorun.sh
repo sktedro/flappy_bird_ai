@@ -18,7 +18,6 @@ fi
 str3="_i"
 str=$str1$str2$str3
 
-#lines=`wc -l ./data/weights001_i`
 lines=`wc -l $str`
 lines=$(echo $lines | cut -d' ' -f 1)
 

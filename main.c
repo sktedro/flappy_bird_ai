@@ -3,6 +3,7 @@
 
 #define ai 1
 #define aiDebug 0
+#define background 1
 
 bool ai_jump(){
   float decision = 
@@ -66,7 +67,7 @@ int main(int argc, char **argv){
       //calculate next position of the bird - gravity
       timediff = (uint64_t)actTime.tv_sec - (uint64_t)lastCheck.tv_sec;
       gettimeofday(&lastCheck, NULL);
-      bird.fall_speed += timediff/4 + 0.3;
+      bird.fall_speed += timediff/4.0 + 0.3;
       bird.y = bird.y + bird.fall_speed;
       ai_birdSpeed = bird.fall_speed;
       ai_birdHeight = bird.y;
@@ -78,7 +79,8 @@ int main(int argc, char **argv){
       ai_distanceToBar = (bar.x1 + bar.x2)/2 - birdx;
 
       //print updaged canvas
-      printCanvas(canvas, bird, bar);
+      if(!background)
+        printCanvas(canvas, bird, bar);
       printf("\nScore = %d\n\n", score);
       printf("Canvas Height: %d\nSpeed: %g\nHeight: %g\nDistance to next bar: %g\nNext bar height: %d\n",
           ai_canvasHeight, ai_birdSpeed, ai_birdHeight, ai_distanceToBar, ai_barHeight);

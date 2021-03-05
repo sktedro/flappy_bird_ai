@@ -4,7 +4,7 @@
 #define canvasy 35 //canvas height
 
 #define gravity 0.05
-#define jumpHeight 2
+#define jumpHeight 2.0
 
 #define birdx 10 //bird location from the left
 #define birdPixels 14 //a constant
