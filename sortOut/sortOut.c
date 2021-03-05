@@ -94,9 +94,9 @@ void freeAll(Line *line, int lines){
 }
 
 int main(int argc, char **argv){
-  if(argc < 3){
-    printf("./sortOut [path to input file] [path to output file]\n");
-    printf("eg.: './sortOut ../data/weights001.o ../data/weights002.i'\n");
+  if(argc < 2){
+    printf("./sortOut [path to file]\n");
+    printf("eg.: './sortOut ../data/weights001.o'\n");
     return -1;
   }
   //printf("%s\n", argv[1]);
@@ -119,7 +119,7 @@ int main(int argc, char **argv){
   sort(line, lines);
 
 
-  f = fopen(argv[2], "w");
+  f = fopen(argv[1], "w");
   if(!f){
     printf("File not found\n");
     return -1;
