@@ -8,6 +8,7 @@
 #include <curses.h> 
 #include <math.h> 
 
+#include "ai_data.h"
 #include "settings.h"
 
 
