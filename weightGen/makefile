@@ -1,2 +1,2 @@
 ALL: weightGen.c
-	gcc weightGen.c -o weightGen -g
+	gcc weightGen.c -o weightGen -g -lm
