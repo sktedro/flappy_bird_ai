@@ -118,7 +118,7 @@ int main(int argc, char **argv){
 
   float fluctuation = 1; //0.9 to 0.00001 (last batch)
   if(batch != 1)
-    fluctuation = 1.0/batch + 1.0/(2.0*batch) + 1.0/(3.0*batch) + 1.0/(4.0*batch);
+    fluctuation = 1.0/(3.0*batch) + 1.0/(4.0*batch);
 
   int mult = pow(batch, 3); //How many new weight sets will be generated using one successful weight set
 
@@ -127,11 +127,52 @@ int main(int argc, char **argv){
     if(batch != 1)
       getLastWeights(i);
     for(int j = 0; j < mult; j++){
-      ai_birdSpeedW += (rand()%1000000)/1000000.0*fluctuation;
-      ai_birdHeightW += (rand()%1000000)/1000000.0*fluctuation;
-      ai_canvasHeightW += (rand()%1000000)/1000000.0*fluctuation;
-      ai_distanceToBarW += (rand()%1000000)/1000000.0*fluctuation;
-      ai_barHeightW += (rand()%1000000)/1000000.0*fluctuation;
+      if(rand()%2 == 0)
+        ai_birdSpeedW += (rand()%1000000)/1000000.0*fluctuation;
+      else
+        ai_birdSpeedW -= (rand()%1000000)/1000000.0*fluctuation;
+      if(rand()%2 == 0)
+        ai_birdHeightW += (rand()%1000000)/1000000.0*fluctuation;
+      else
+        ai_birdHeightW -= (rand()%1000000)/1000000.0*fluctuation;
+      if(rand()%2 == 0)
+        ai_canvasHeightW -= (rand()%1000000)/1000000.0*fluctuation;
+      else
+        ai_canvasHeightW += (rand()%1000000)/1000000.0*fluctuation;
+      if(rand()%2 == 0)
+        ai_distanceToBarW += (rand()%1000000)/1000000.0*fluctuation;
+      else
+        ai_distanceToBarW -= (rand()%1000000)/1000000.0*fluctuation;
+      if(rand()%2 == 0)
+        ai_barHeightW += (rand()%1000000)/1000000.0*fluctuation;
+      else
+        ai_barHeightW -= (rand()%1000000)/1000000.0*fluctuation;
+
+      if(ai_birdSpeedW > 1)
+        ai_birdSpeedW = 1;
+      if(ai_birdSpeedW < 0)
+        ai_birdSpeedW = 0;
+
+      if(ai_birdHeightW > 1)
+        ai_birdHeightW = 1;
+      if(ai_birdHeightW < 0)
+        ai_birdHeightW = 0;
+
+      if(ai_canvasHeightW > 1)
+        ai_canvasHeightW = 1;
+      if(ai_canvasHeightW < 0)
+        ai_canvasHeightW = 0;
+
+      if(ai_distanceToBarW > 1)
+        ai_distanceToBarW = 1;
+      if(ai_distanceToBarW < 0)
+        ai_distanceToBarW = 0;
+
+      if(ai_barHeightW > 1)
+        ai_barHeightW = 1;
+      if(ai_barHeightW < 0)
+        ai_barHeightW = 0;
+
       printWeights(buffer);
     }
   }
