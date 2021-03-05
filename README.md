@@ -4,6 +4,8 @@ Author: Tedro
 Goal is to create a flappy bird game playable in terminal and then implement an
 AI to teach itself to play the game.
 
+
+
 To run AI learning:
   ./main [batchNumber] [weightsLine]
   while batchNumber is the learning itearion count = first is 1 and so on...
@@ -27,10 +29,32 @@ while "score" is the score that the AI achieved with those weights.
 
 
 
-Weight generator:
 
-The weight generation algorithm must be started from it's PARENT folder: ./weightGen/weightGen [batch] [how many]
+makefile
+  - Builds main.c, sort.c and wgen.c in build/ folder upon "make" command
 
-It generates weights into ../data/weightsXXX_i in format: float;float;float;float;float
+./automake
+  - Automatically build when something changes
+  Run on the background so the project will be built every time anything in the
+  directory changes
 
-For batches higher than 1 it takes data from previous batch (weightsXXX_o).
+sh autorun.sh [batch number] [desired amount of outputs]
+  - AI Trainer
+  Automatically generates weights based on previous batch (or totally randomly
+  if batch number is 0), tests these weights in the game and every weight that
+  was successful (more than one barrier was crossed by the bird) is then
+  written to weightsXXX_o file in data/
+  TODO: Automatically sort when done
+  TODO: Automatically run next batch when done
+  TODO: If no batch number entered, go from the last one
+
+./build/main [] []
+
+./build/sort [] []
+  - AI Output sorter - sorts weight sets based on score that was achieved using that set
+
+./build/wgen [batch] [desired amount of generated weights]
+  - AI Weight generator
+  It generates weights into ../data/weightsXXX_i in format: float;float;float;float;float
+  For batches higher than 1 it takes data from previous batch (weightsXXX_o)
+  and randomly adds or substracts fractions of 1.
