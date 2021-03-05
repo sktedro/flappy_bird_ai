@@ -13,14 +13,14 @@ To just play the game:
   ./main
 
 The input data should be in ./data/ folder and under the name
-"weightsXXX_input", while XXX is the batch number (for which batch the inputs
+"weightsXXX_i", while XXX is the batch number (for which batch the inputs
 are intended).
 The data should be in floats (0.0 to 1.0) and separated by ;
 Each line consists of (actually) 5 weights:
 ai_birdSpeed, ai_birdHeight, ai_canvasHeight, ai_distanceToBar and ai_barHeight
 
 Outputs from the batch will be in the same folder and under the name
-"weightsXXX_output". Only successful outputs will be written here (for the
+"weightsXXX_o". Only successful outputs will be written here (for the
 first batch, the ones that cross the first barrier) and each line will be:
 score, ai_birdSpeed, ai_birdHeight, ai_canvasHeight, ai_distanceToBar and ai_barHeight
 while "score" is the score that the AI achieved with those weights.
