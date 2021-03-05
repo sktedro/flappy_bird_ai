@@ -48,7 +48,7 @@ while [ $recordLines -lt $wantedRecords ]; do
   inputLines=$(echo $inputLines | cut -d' ' -f 1)
 
   for i in $(seq 1 $inputLines ); do
-    eval ./build/main $batch $i
+    eval ./build/game $batch $i
   done
 
   eval rm -f $inputPath
