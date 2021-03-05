@@ -10,17 +10,16 @@
 
 #define gravity 0.05
 #define speed 100 //default: 100
+#define jumpHeight 2
 
 #define canvasx 100 //canvas width
 #define canvasy 35 //canvas height
 
 #define birdx 10 //bird location from the left
-#define birdpixels 14 //a constant
+#define birdPixels 14 //a constant
 
 #define barWidth 8 //width of a single barrier
 #define barGap 10 //gap between top and bottom barriers
-
-bool barStatus = false;
 
 struct timeval lastCheck, actTime;
 
@@ -28,6 +27,7 @@ struct timeval lastCheck, actTime;
 typedef struct{
   float y;
   float fall_speed;
+  int **pixels;
 } Bird;
 
 typedef struct{
@@ -41,7 +41,7 @@ typedef struct{
 void printBird(char canvas[canvasx][canvasy], Bird bird){
   if(bird.y >= canvasy && bird.y < 0)
     return;
-  int pixels[birdpixels][2] = {
+  int pixels[birdPixels][2] = {
     {birdx+3, bird.y},
     {birdx-3, bird.y},
     {birdx+2, bird.y},
@@ -57,9 +57,9 @@ void printBird(char canvas[canvasx][canvasy], Bird bird){
     {birdx, bird.y+1},
     {birdx, bird.y-1}
   };
-  for(int i = 0; i < birdpixels; i++){
+  for(int i = 0; i < birdPixels; i++){
     for(int j = 0; j < 2; j++){
-      canvas[pixels[i][0]][pixels[i][1]] = '%';
+      canvas[bird.pixels[i][0]][bird.pixels[i][1]] = '%';
     }
   }
 }
@@ -77,7 +77,6 @@ void printBarrier(char canvas[canvasx][canvasy], Barrier bar){
     if(bar.x2 >= 0 && bar.x2 < canvasx)
       canvas[bar.x2][i] = '#';
   }
-
   for(int i = bar.x1; i <= bar.x2; i++){
     if(i < 0 || i >= canvasx)
       break;
@@ -102,28 +101,73 @@ void printCanvas(char canvas[canvasx][canvasy], Bird bird, Barrier bar){
   }
 }
 
+bool jump(){
+  initscr();
+  timeout(1);
+  if(getch() != ERR){
+    endwin();
+    return true;
+  }
+  endwin();
+  return false;
+}
+
+void newBar(Barrier *bar){
+  bar->highy = rand()%(canvasy - 2*barGap) + barGap;
+  bar->lowy = bar->highy - barGap;
+  bar->x1 = bar->x1 = canvasx - 1;
+  bar->x2 = bar->x2 = canvasx + barWidth;
+}
+
+bool checkBird(Bird bird, Barrier *bar, int score){
+  if(bar->x2 < 0){
+    newBar(bar);
+    score++;
+  }
+  if(bird.y < 0 || bird.y > canvasy){
+    printf("You lost. Score: %d\n", score);
+    return false;
+  }
+  for(int i = 0; i < birdPixels; i++){
+    for(int j = 0; j < 2; j++){
+      if(bird.pixels[i][0] >= bar->x1 && bird.pixels[i][0] <= bar->x2){
+        if(bird.pixels[i][1] <= bar->lowy || bird.pixels[i][1] >= bar->highy){
+          printf("You lost. Score: %d\n", score);
+          return false;
+        }
+      }    
+    }
+  }
+  return true;
+}
+
+bool birdPixelsInit(Bird *bird){
+  bird->pixels = malloc(birdPixels*sizeof(void*));
+  if(!bird->pixels)
+    return false;
+  for(int i = 0; i < birdPixels; i++){
+    bird->pixels[i] = malloc(2*sizeof(int));
+    if(!bird->pixels[i])
+      return false;
+  }
+  bird->pixels[0][0] = birdx+3;
+  bird->pixels[1][0] = birdx-3;
+  bird->pixels[2][0] = bird->pixels[4][0] = bird->pixels[8][0] = birdx+2;
+  bird->pixels[3][0] = bird->pixels[5][0] = bird->pixels[9][0] = birdx-2;
+  bird->pixels[6][0] = bird->pixels[10][0] = birdx+1;
+  bird->pixels[7][0] = bird->pixels[11][0] = birdx-1;
+  bird->pixels[12][0] = bird->pixels[13][0] = birdx;
+  return true;
+}
+
 int main(){
   char canvas[canvasx][canvasy];
 
   Bird bird;
   bird.y = (int)canvasy/2;
   bird.fall_speed = 0;
-  int pixels[birdpixels][2] = { //pixels that the bird consists of
-    {birdx+3, bird.y},
-    {birdx-3, bird.y},
-    {birdx+2, bird.y},
-    {birdx-2, bird.y},
-    {birdx+2, bird.y+1},
-    {birdx-2, bird.y+1},
-    {birdx+2, bird.y-1},
-    {birdx-2, bird.y-1},
-    {birdx+1, bird.y+1},
-    {birdx-1, bird.y+1},
-    {birdx+1, bird.y-1},
-    {birdx-1, bird.y-1},
-    {birdx, bird.y+1},
-    {birdx, bird.y-1}
-  };
+  if(!birdPixelsInit(&bird))
+    return -1;
 
   Barrier bar = {0};
 
@@ -133,52 +177,13 @@ int main(){
 
   bool gameOver = false;
   int score = -1;
-  
+
   while(1){
-    //React if enter was pressed
-    initscr();
-    timeout(1);
-    if(getch() != ERR)
-      bird.fall_speed = -2;
-    endwin();
-    
-    //Pixels of a bird
-    pixels[0][1] = pixels[1][1] = pixels[2][1] = pixels[3][1] = bird.y;
-    pixels[4][1] = pixels[5][1] = pixels[8][1] = 
-      pixels[9][1] = pixels[12][1] = bird.y+1;
-    pixels[10][1] = pixels[11][1] = pixels[6][1] = 
-      pixels[7][1] = pixels[13][1] = bird.y-1;
+    if(jump())
+      bird.fall_speed = -jumpHeight;
 
-    if(bird.y < 0 || bird.y > canvasy){
-      printf("You lost. Score: %d\n", score);
-      gameOver = true;
-    }
-    for(int i = 0; i < birdpixels; i++){
-      for(int j = 0; j < 2; j++){
-        if(pixels[i][0] >= bar.x1 && pixels[i][0] <= bar.x2){
-          if(pixels[i][1] <= bar.lowy || pixels[i][1] >= bar.highy){
-            printf("You lost. Score: %d\n", score);
-            gameOver = true;
-            i = j = 1000;
-          }
-        }    
-      }
-    }
-    
-    if(gameOver)
+    if(!checkBird(bird, &bar, score))
       break;
-
-    if(!barStatus){
-      bar.highy = rand()%(canvasy - 2*barGap) + barGap;
-      bar.lowy = bar.highy - barGap;
-      bar.x1 = bar.x1 = canvasx - 1;
-      bar.x2 = bar.x2 = canvasx + barWidth;
-      barStatus = true;
-      score++;
-    }
-    if(bar.x2 < 0)
-      barStatus = false;
-
 
     gettimeofday(&actTime, NULL);
     if((double)actTime.tv_usec < (double)lastCheck.tv_usec){
@@ -187,12 +192,16 @@ int main(){
 
     if((double)actTime.tv_usec > (double)lastCheck.tv_usec + 400*speed){
       int timediff = (double)actTime.tv_sec - (double)lastCheck.tv_sec; 
-
       bird.fall_speed += timediff/4 + 0.3;
+      bird.y = bird.y + bird.fall_speed;
+
+      bird.pixels[0][1] = bird.pixels[1][1] = bird.pixels[2][1] = bird.pixels[3][1] = bird.y;
+      bird.pixels[4][1] = bird.pixels[5][1] = bird.pixels[6][1] = bird.pixels[7][1] =
+        bird.pixels[12][1] = bird.y+1;
+      bird.pixels[8][1] = bird.pixels[9][1] = bird.pixels[10][1]= bird.pixels[11][1]=
+        bird.pixels[13][1] = bird.y-1;
 
       gettimeofday(&lastCheck, NULL);
-
-      bird.y = bird.y + bird.fall_speed;
 
       (bar.x1)--;
       (bar.x2)--;
