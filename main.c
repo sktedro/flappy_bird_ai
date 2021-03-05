@@ -385,8 +385,8 @@ int main(int argc, char **argv){
       }
 
       //Print stats
-      printf("\nScore = %d\n\n", score);
       if(!background){
+        printf("Score = %d\n", score);
         printf("Canvas Height: %d\nSpeed: %g\nHeight: %g\nDistance to next bar: %g\nNext bar height: %d\n",
             ai_canvasHeight, ai_birdSpeed, ai_birdHeight, ai_distanceToBar, ai_barHeight);
       }
