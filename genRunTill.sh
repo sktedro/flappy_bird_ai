@@ -4,11 +4,11 @@ batch=$1
 wantedRecords=$2
 
 if [ -z "$1" ]; then
-  echo "Check arguments"
+  echo "genRunTill.sh: Check arguments"
   exit
 fi
 if [ -z "$2" ]; then
-  echo "Check arguments"
+  echo "genRunTill.sh: Check arguments"
   exit
 fi
 
@@ -41,6 +41,11 @@ while [ $lines -le $wantedRecords ]; do
   lines=$(echo $lines | cut -d' ' -f 1)
   eval touch $input
   eval $weightGenPath $batch 100
-  eval sh autorun.sh $batch
+
+  #eval sh autorun.sh $batch
+  for i in $(seq 1 $lines ); do
+    eval ./main $batch $i
+  done
+
   eval rm $input
 done
