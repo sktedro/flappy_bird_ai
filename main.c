@@ -163,7 +163,8 @@ bool checkBird(Bird bird, Barrier *bar, int *score){
 }
 
 void updateBird(Bird *bird){
-  bird->pixels[0][1] = bird->pixels[1][1] = bird->pixels[2][1] = bird->pixels[3][1] = bird->y;
+  bird->pixels[0][1] = bird->pixels[1][1] = bird->pixels[2][1] = bird->pixels[3][1] =
+    bird->y;
   bird->pixels[4][1] = bird->pixels[5][1] = bird->pixels[6][1] = bird->pixels[7][1] =
     bird->pixels[12][1] = bird->y+1;
   bird->pixels[8][1] = bird->pixels[9][1] = bird->pixels[10][1]= bird->pixels[11][1]=
@@ -250,15 +251,16 @@ bool ai_getWeights(int batch, int setting){
     }
   }
 
+  //Get one line
   char *line = malloc(1000);
   for(int i = 0; i < 1000; i++){
     line[i] = fgetc(f);
     if(line[i] == '\n' || line[i] == EOF)
       break;
   }
-
   //printf("%s", line);
 
+  //Get floats from that line
   char delim = ';';
   char *token = strtok(line, &delim);
   if(!token || token[0] == EOF)
@@ -307,6 +309,7 @@ void ai_printWeights(int score){
  */
 
 int main(int argc, char **argv){
+  //AI initialisation
   int batch, setting;
   if(ai){
     if(argc < 3){
@@ -326,12 +329,14 @@ int main(int argc, char **argv){
     }
   }
 
+  //Init of a canvas, a bird and a barrier
   char canvas[canvasx][canvasy];
   Bird bird;
   if(!birdInit(&bird))
     return -1;
   Barrier bar;
 
+  //Time init (for rand(), time difference calculation etc.)
   time_t t = 0;
   srand((unsigned) time(&t));
   gettimeofday(&lastCheck, NULL);
@@ -343,40 +348,43 @@ int main(int argc, char **argv){
   bool gameOver = false;
 
   while(1){
+    //Check, if the command to jump has been given
     if((!ai && jump()) || (ai && ai_jump()))
       bird.fall_speed = -jumpHeight;
 
+    //Check, if bird isn't dead
     if(!checkBird(bird, &bar, &score))
       break;
 
+    //Only update the screen "once in a while"
     gettimeofday(&actTime, NULL);
     u_int64_t time = actTime.tv_usec + actTime.tv_sec*1000000;
     if(time > nextUpdate){
       nextUpdate = time + 400*speed;
 
-      //calculate next position of the bird - gravity
+      //Calculate next position of the bird while keeping gravity in mind
       timediff = (u_int64_t)actTime.tv_sec - (u_int64_t)lastCheck.tv_sec;
       gettimeofday(&lastCheck, NULL);
       bird.fall_speed += timediff/4.0 + 0.3;
       bird.y = bird.y + bird.fall_speed;
+
+      //Update variables for AI
       if(ai){
         ai_birdSpeed = bird.fall_speed;
         ai_birdHeight = bird.y;
-      }
-
-      //update canvas in memory
-      updateBird(&bird);
-      updateBar(&bar);
-
-      if(ai){
         ai_distanceToBar = (bar.x1 + bar.x2)/2 - birdx;
       }
 
-      //print updaged canvas
+      //Update canvas in memory
+      updateBird(&bird);
+      updateBar(&bar);
+
+      //Print updated canvas
       if(!background){
         printCanvas(canvas, bird, bar);
       }
 
+      //Print stats
       printf("\nScore = %d\n\n", score);
       if(!background){
         printf("Canvas Height: %d\nSpeed: %g\nHeight: %g\nDistance to next bar: %g\nNext bar height: %d\n",
@@ -385,6 +393,7 @@ int main(int argc, char **argv){
     }
   }
 
+  //Save the weights that lead to successful game (score>0)
   if(ai && score > 0)
     ai_printWeights(score);
 
