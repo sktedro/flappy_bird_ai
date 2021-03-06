@@ -7,6 +7,7 @@ fi
 
 batch=$1
 wantedRecords=$2
+birds=$3
 
 buildFolder="./build/"
 wgenPath=$buildFolder"wgen"
@@ -48,7 +49,7 @@ while true; do
     #RUN THE GAME FOR EVERY INPUT WEIGHT
     for i in $(seq 1 $inputLines ); do
       echo Running batch $batch, line $i of $inputLines lines in $inputPath:
-      eval $gamePath $batch $i
+      eval $gamePath $batch $i $birds
     done
 
     #COUNT OUTPUT WEIGHT SETS EVERY ITERATION

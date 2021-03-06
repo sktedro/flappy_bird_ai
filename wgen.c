@@ -117,7 +117,7 @@ int main(int argc, char **argv){
 
   char *buffer = malloc(100);
 
-  float fluctuation = 1; //0.9 to 0.00001 (last batch)
+  float fluctuation = 1.0; //0.9 to 0.00001 (last batch)
   if(batch != 1)
     fluctuation = 1.0/(3.0*batch) + 1.0/(4.0*batch);
 

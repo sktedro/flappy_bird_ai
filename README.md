@@ -38,7 +38,7 @@ makefile
   Run on the background so the project will be built every time anything in the
   directory changes
 
-sh autorun.sh [batch number] [desired amount of outputs]
+sh autorun.sh [batch] [desired amount of outputs] [amount of birds per execution]
   - AI Trainer
   Automatically generates weights based on previous batch (or totally randomly
   if batch number is 0), tests these weights in the game and every weight that
