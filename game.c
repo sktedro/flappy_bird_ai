@@ -262,25 +262,12 @@ bool ai_getWeights(int batch, Bird *birds, int birdsCount){
     return false;
   }
 
-  /*
-  //Get to the desired line
-  for(int i = 0; i < setting - 1; i++){
-    char c = ' ';
-    while(c != '\n'){
-      c = fgetc(f);
-      if(c == EOF)
-        break;
-    }
-  }
-  */
-
   char *line = malloc(1000);
   char delim = ';';
   char *token;
 
   for(int l = 0; l < birdsCount; l++){
     token = NULL;
-    printf("SUP\n"); //TODO
     //Get one line
     for(int i = 0; i < 999; i++){
       line[i] = fgetc(f);
@@ -397,7 +384,10 @@ int main(int argc, char **argv){
       if(birds[i].alive){
         if(!checkBird(&birds[i], &bar)){
           birds[i].alive = false;
-          printf("Bird %d died. Score: %d\n", i, birds[i].score);
+          if(ai && aiDebug)
+            printf("Bird %d died. Score: %d\n", i, birds[i].score);
+          if(!ai)
+            printf("You died. Score: %d\n", birds[i].score);
         }
       }
     }
