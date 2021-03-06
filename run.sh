@@ -38,15 +38,19 @@ while true; do
   #COUNT HOW MANY OUTPUT WEIGHT SETS THERE ALREADY ARE
   recordLines=`wc -l $recordsPath | cut -d' ' -f 1`
 
+  run=0
+
   #WHILE WE WANT MORE OUTPUT WEIGHT SETS THAN WE ALREADY HAVE
   while [ $recordLines -lt $wantedRecords ]; do
+    run=$((run+1))
+
     #GENERATE INPUT WEIGHTS AND COUNT THEM
     eval rm -f $inputPath
     eval touch $inputPath
     eval $wgenPath $batch $birds 1
 
     #RUN THE GAME FOR EVERY INPUT WEIGHT
-    echo Running batch $batch.
+    echo Running batch $batch, run $run.
     eval $gamePath $batch $birds
 
     #COUNT OUTPUT WEIGHT SETS EVERY ITERATION

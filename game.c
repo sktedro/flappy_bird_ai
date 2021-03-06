@@ -10,7 +10,7 @@
 
 
 #define aiDebug 0 //Will print AI weights
-#define background 0 //Toggle running on background (only data, no "images")
+#define background 1 //Toggle running on background (only data, no "images")
 
 #define canvasx 100 //Canvas width
 #define canvasy 35 //Canvas height
@@ -403,14 +403,13 @@ int main(int argc, char **argv){
         birds[i].stats[distanceToBarI] = (bar.x1 + bar.x2)/2 - birdx;
 
         //Update canvas in memory
-        if(!background){
-          updateBird(&birds[i]);
-        }
+        updateBird(&birds[i]);
       }
+
+      updateBar(&bar);
 
       //Print updated canvas
       if(!background){
-        updateBar(&bar);
         printCanvas(canvas, birds, birdsCount, bar);
       }
 
