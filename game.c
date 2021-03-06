@@ -9,7 +9,6 @@
 #include <math.h>
 
 
-#define ai 1 //Toggle AI instead of the user playing the game
 #define aiDebug 0 //Will print AI weights
 #define background 0 //Toggle running on background (only data, no "images")
 
@@ -26,6 +25,7 @@
 #define barWidth 8 //Width of a single barrier
 #define barGap 10 //Gap between top and bottom barriers
 
+bool ai = true; //Is the AI or the user playing?
 
 int canvasHeight, barHeight;
 
@@ -329,15 +329,13 @@ void ai_printWeights(Bird *birds, int birdsCount){
 int main(int argc, char **argv){
   int batch, birdsCount = 1;
 
-  //AI initialisation
-  if(ai){
-    if(argc < 3){
-      printf("main.c: Too few arguments\n");
-      return -1;
-    }
+  if(argc < 3){
+    ai = false;
+  }else{
     batch = atoi(argv[1]);
     birdsCount = atoi(argv[2]);
   }
+
   int prevBirdsCount = birdsCount;
 
   //Init of a canvas, birds and a barrier
@@ -354,13 +352,8 @@ int main(int argc, char **argv){
   Barrier bar = {0, 0, 0, 0};
 
   //Init AI weights
-  if(ai){
-    if(!ai_getWeights(batch, birds, birdsCount))
-      return -1;
-    if(aiDebug){
-      printf("File: %s\n", filename);
-    }
-  }
+  if(ai && !ai_getWeights(batch, birds, birdsCount))
+    return -1;
 
 
   //Time init (for rand(), time difference calculation etc.)

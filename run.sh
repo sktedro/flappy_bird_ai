@@ -1,13 +1,13 @@
 #!/bin/bash
 
-if [ -z "$1" ] || [ -z "$2" ]; then
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
   echo "genRunTill.sh: Check arguments"
   exit
 fi
 
 batch=$1
-wantedRecords=$2
-birds=$3
+birds=$2
+wantedRecords=$3
 
 buildFolder="./build/"
 wgenPath=$buildFolder"wgen"
@@ -43,14 +43,11 @@ while true; do
     #GENERATE INPUT WEIGHTS AND COUNT THEM
     eval rm -f $inputPath
     eval touch $inputPath
-    eval $wgenPath $batch 100 1
-    inputLines=`wc -l $inputPath | cut -d' ' -f 1`
+    eval $wgenPath $batch $birds 1
 
     #RUN THE GAME FOR EVERY INPUT WEIGHT
-    for i in $(seq 1 $inputLines ); do
-      echo Running batch $batch, line $i of $inputLines lines in $inputPath:
-      eval $gamePath $batch $i $birds
-    done
+    echo Running batch $batch.
+    eval $gamePath $batch $birds
 
     #COUNT OUTPUT WEIGHT SETS EVERY ITERATION
     recordLines=`wc -l $recordsPath | cut -d' ' -f 1`
