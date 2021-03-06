@@ -9,9 +9,9 @@
 #include <math.h>
 
 
-#define ai 1 //Toggle AI instead of the user playing the game
+#define ai 0 //Toggle AI instead of the user playing the game
 #define aiDebug 0 //Will print AI weights
-#define background 1 //Toggle running on background (only data, no "images")
+#define background 0 //Toggle running on background (only data, no "images")
 
 #define canvasx 100 //Canvas width
 #define canvasy 35 //Canvas height
@@ -27,18 +27,23 @@
 #define barGap 10 //Gap between top and bottom barriers
 
 
-float ai_birdSpeed, ai_birdHeight, ai_distanceToBar;
-int ai_canvasHeight, ai_barHeight;
-float ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW;
+int canvasHeight, barHeight;
 
 char filename[] = "./data/weightsXXX_i";
+
+enum wIndex{birdSpeedWI, birdHeightWI, canvasHeightWI, distanceToBarWI, barHeightWI};
+enum statIndex{birdSpeedI, birdHeightI, distanceToBarI};
 
 struct timeval lastCheck, actTime;
 
 typedef struct{
+  bool alive;
+  int score;
   float y;
   float fall_speed;
   int **pixels;
+  float weights[5];
+  float stats[3];
 } Bird;
 
 typedef struct{
@@ -54,9 +59,9 @@ typedef struct{
  */
 
 void newBar(Barrier *bar){
-  ai_barHeight = rand()%(canvasy - 2*barGap) + barGap;
-  bar->highy = ai_barHeight + barGap/2;
-  bar->lowy = ai_barHeight - barGap/2;
+  barHeight = rand()%(canvasy - 2*barGap) + barGap;
+  bar->highy = barHeight + barGap/2;
+  bar->lowy = barHeight - barGap/2;
   bar->x1 = bar->x1 = canvasx - 1;
   bar->x2 = bar->x2 = canvasx + barWidth;
 }
@@ -93,30 +98,35 @@ void printBarrier(char canvas[canvasx][canvasy], Barrier bar){
  * Bird functions
  */ 
 
-bool birdInit(Bird *bird){
-  bird->y = (int)canvasy/2;
-  bird->fall_speed = 0;
-  bird->pixels = malloc(birdPixels*sizeof(void*));
-  if(!bird->pixels)
-    return false;
-  for(int i = 0; i < birdPixels; i++){
-    bird->pixels[i] = malloc(2*sizeof(int));
-    if(!bird->pixels[i])
+bool birdInit(Bird *bird, int birdsCount){
+  for(int i = 0; i < birdsCount; i++){
+    bird[i].alive = true;
+    bird[i].score = -1;
+    bird[i].y = (int)canvasy/2;
+    bird[i].fall_speed = 0;
+    bird[i].pixels = malloc(birdPixels*sizeof(void*));
+    if(!bird[i].pixels)
       return false;
+    for(int j = 0; j < birdPixels; j++){
+      bird[i].pixels[j] = malloc(2*sizeof(int));
+      if(!bird[i].pixels[j])
+        return false;
+    }
+    bird[i].pixels[0][0] = birdx+3;
+    bird[i].pixels[1][0] = birdx-3;
+    bird[i].pixels[2][0] = bird[i].pixels[4][0] = bird[i].pixels[8][0] = birdx+2;
+    bird[i].pixels[3][0] = bird[i].pixels[5][0] = bird[i].pixels[9][0] = birdx-2;
+    bird[i].pixels[6][0] = bird[i].pixels[10][0] = birdx+1;
+    bird[i].pixels[7][0] = bird[i].pixels[11][0] = birdx-1;
+    bird[i].pixels[12][0] = bird[i].pixels[13][0] = birdx;
   }
-  bird->pixels[0][0] = birdx+3;
-  bird->pixels[1][0] = birdx-3;
-  bird->pixels[2][0] = bird->pixels[4][0] = bird->pixels[8][0] = birdx+2;
-  bird->pixels[3][0] = bird->pixels[5][0] = bird->pixels[9][0] = birdx-2;
-  bird->pixels[6][0] = bird->pixels[10][0] = birdx+1;
-  bird->pixels[7][0] = bird->pixels[11][0] = birdx-1;
-  bird->pixels[12][0] = bird->pixels[13][0] = birdx;
   return true;
 }
 
 void printBird(char canvas[canvasx][canvasy], Bird bird){
   if(bird.y >= canvasy && bird.y < 0)
     return;
+  //TODO fuj to pole. Nechcem ho deklarovat tak casto
   int pixels[birdPixels][2] = {
     {birdx+3, bird.y},
     {birdx-3, bird.y},
@@ -140,20 +150,25 @@ void printBird(char canvas[canvasx][canvasy], Bird bird){
   }
 }
 
-bool checkBird(Bird bird, Barrier *bar, int *score){
+void checkBar(Barrier *bar, Bird *birds, int birdsCount){
   if(bar->x2 < 0){
     newBar(bar);
-    (*score)++;
+    for(int i = 0; i < birdsCount; i++){
+      if(birds[i].alive){
+        (birds[i].score)++;
+      }
+    }
   }
-  if(bird.y < 0 || bird.y > canvasy){
-    printf("You lost. Score: %d\n", *score);
+}
+
+bool checkBird(Bird *bird, Barrier *bar){
+  if(bird->y < 0 || bird->y > canvasy){
     return false;
   }
   for(int i = 0; i < birdPixels; i++){
     for(int j = 0; j < 2; j++){
-      if(bird.pixels[i][0] >= bar->x1 && bird.pixels[i][0] <= bar->x2){
-        if(bird.pixels[i][1] <= bar->lowy || bird.pixels[i][1] >= bar->highy){
-          printf("You lost. Score: %d\n", *score);
+      if(bird->pixels[i][0] >= bar->x1 && bird->pixels[i][0] <= bar->x2){
+        if(bird->pixels[i][1] <= bar->lowy || bird->pixels[i][1] >= bar->highy){
           return false;
         }
       }
@@ -171,21 +186,25 @@ void updateBird(Bird *bird){
     bird->pixels[13][1] = bird->y-1;
 }
 
-void freeBirdPixels(Bird bird){
-  for(int i = 0; i < birdPixels; i++)
-    free(bird.pixels[i]);
-  free(bird.pixels);
+void freeBirds(Bird *birds, int birdsCount){
+  for(int i = 0; i < birdsCount; i++){
+    for(int j = 0; j < birdPixels; j++)
+      free(birds[i].pixels[j]);
+    free(birds[i].pixels);
+  }
+  free(birds);
 }
 
 /*
  * Other game functions
  */
 
-void printCanvas(char canvas[canvasx][canvasy], Bird bird, Barrier bar){
+void printCanvas(char canvas[canvasx][canvasy], Bird *bird, int birdsCount, Barrier bar){
   for(int i = 0; i < canvasx; i++)
     for(int j = 0; j < canvasy; j++)
       canvas[i][j] = ' ';
-  printBird(canvas, bird);
+  for(int i = 0; i < birdsCount; i++)
+    printBird(canvas, bird[i]);
   printBarrier(canvas, bar);
 
   system("clear");
@@ -212,19 +231,19 @@ bool jump(){
  * AI functions
  */
 
-bool ai_jump(){
+bool ai_jump(Bird *birds, int i){
   float decision =
-    ai_birdSpeed * ai_birdSpeedW +
-    ai_birdHeight * ai_birdHeightW/10 +
-    ai_canvasHeight * ai_canvasHeightW/50 +
-    ai_distanceToBar * ai_distanceToBarW/20 +
-    ai_barHeight * ai_barHeightW/10;
+    birds[i].stats[birdSpeedI] * birds[i].weights[birdSpeedWI] +
+    birds[i].stats[birdHeightI] * birds[i].weights[birdHeightWI]/10 +
+    canvasHeight * birds[i].weights[canvasHeightWI]/50 +
+    birds[i].stats[distanceToBarI] * birds[i].weights[distanceToBarWI]/20 +
+    barHeight * birds[i].weights[barHeightWI]/10;
   if(decision > 0.5 * 5)
     return true;
   return false;
 }
 
-bool ai_getWeights(int batch, int setting){
+bool ai_getWeights(int batch, Bird *birds, int birdCount){
   FILE *f;
   char *buffer;
   size_t bufferSize;
@@ -241,6 +260,7 @@ bool ai_getWeights(int batch, int setting){
     return false;
   }
 
+  /*
   //Get to the desired line
   for(int i = 0; i < setting - 1; i++){
     char c = ' ';
@@ -250,54 +270,62 @@ bool ai_getWeights(int batch, int setting){
         break;
     }
   }
+  */
 
-  //Get one line
   char *line = malloc(1000);
-  for(int i = 0; i < 1000; i++){
-    line[i] = fgetc(f);
-    if(line[i] == '\n' || line[i] == EOF)
-      break;
-  }
-  //printf("%s", line);
-
-  //Get floats from that line
   char delim = ';';
-  char *token = strtok(line, &delim);
-  if(!token || token[0] == EOF)
-    return false;
-  ai_birdSpeedW = strtof(token, NULL);
-  token = strtok(NULL, &delim);
-  ai_birdHeightW = strtof(token, NULL);
-  token = strtok(NULL, &delim);
-  ai_canvasHeightW = strtof(token, NULL);
-  token = strtok(NULL, &delim);
-  ai_distanceToBarW = strtof(token, NULL);
-  token = strtok(NULL, &delim);
-  ai_barHeightW = strtof(token, NULL);
-  //printf("birdSpeedW = %g\nbirdHeightW = %g\ncanvasHeightW = %g\n distanceToBarW = %g\nbarHeightW = %g\n", ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW);
+  char *token;
+
+  for(int l = 0; l < birdCount; l++){
+    //Get one line
+    for(int i = 0; i < 999; i++){
+      line[i] = fgetc(f);
+      if(line[i] == '\n' || line[i] == EOF)
+        break;
+    }
+    //printf("%s", line);
+
+    //Get floats from that line
+    token = strtok(line, &delim); //Skip the first record of the line - score
+    if(!token || token[0] == EOF)
+      return false;
+    birds[l].weights[birdSpeedWI] = strtof(token, NULL);
+    token = strtok(NULL, &delim);
+    birds[l].weights[birdHeightWI] = strtof(token, NULL);
+    token = strtok(NULL, &delim);
+    birds[l].weights[canvasHeightWI] = strtof(token, NULL);
+    token = strtok(NULL, &delim);
+    birds[l].weights[distanceToBarWI] = strtof(token, NULL);
+    token = strtok(NULL, &delim);
+    birds[l].weights[barHeightWI] = strtof(token, NULL);
+  }
 
   free(line);
   fclose(f);
   return true;
 }
 
-void ai_printWeights(int score){
+void ai_printWeights(Bird *birds, int birdsCount){
   filename[18] = 'o';
   FILE *f = fopen(filename, "a");
-  char *buffer = malloc(100);
-  snprintf(buffer, 20, "%d;", score);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f;", ai_birdSpeedW);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f;", ai_birdHeightW);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f;", ai_canvasHeightW);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f;", ai_distanceToBarW);
-  fputs(buffer, f);
-  snprintf(buffer, 20, "%f", ai_barHeightW);
-  fputs(buffer, f);
-  fputc('\n', f);
+  char *buffer = malloc(1000);
+  for(int i = 0; i < birdsCount; i++){
+    if(birds[i].score > 0){
+      snprintf(buffer, 100, "%d;", birds[i].score);
+      fputs(buffer, f);
+      snprintf(buffer, 100, "%f;", birds[i].weights[birdSpeedWI]);
+      fputs(buffer, f);
+      snprintf(buffer, 100, "%f;", birds[i].weights[birdHeightWI]);
+      fputs(buffer, f);
+      snprintf(buffer, 100, "%f;", birds[i].weights[canvasHeightWI]);
+      fputs(buffer, f);
+      snprintf(buffer, 100, "%f;", birds[i].weights[distanceToBarWI]);
+      fputs(buffer, f);
+      snprintf(buffer, 100, "%f", birds[i].weights[barHeightWI]);
+      fputs(buffer, f);
+      fputc('\n', f);
+    }
+  }
   fclose(f);
   free(buffer);
 }
@@ -309,32 +337,38 @@ void ai_printWeights(int score){
  */
 
 int main(int argc, char **argv){
+  int batch, setting, birdsCount = 1; //TODO remove setting var
+
+  //Init of a canvas, birds and a barrier
+  char canvas[canvasx][canvasy];
+  canvasHeight = canvasy;
+
+  Bird *birds = malloc(birdsCount * sizeof(Bird));
+  if(!birds)
+    return -1;
+  if(!birdInit(birds, birdsCount))
+    return -1;
+  Bird bird;
+
+  Barrier bar;
+
   //AI initialisation
-  int batch, setting;
   if(ai){
     if(argc < 3){
       printf("main.c: Too few arguments\n");
       return -1;
     }
-    ai_canvasHeight = canvasy;
     batch = atoi(argv[1]);
-    setting = atoi(argv[2]);
-    if(!ai_getWeights(batch, setting))
-      return -1;
+    birdsCount = atoi(argv[3]);
+    for(int i = 0; i < birdsCount; i++){
+      if(!ai_getWeights(batch, birds, birdsCount))
+        return -1;
+    }
     if(aiDebug){
       printf("File: %s\n", filename);
-      printf("birdSpeedW = %g\nbirdHeightW = %g\ncanvasHeightW = %g\ndistanceToBarW = %g\nbarHeightW = %g\n", 
-          ai_birdSpeedW, ai_birdHeightW, ai_canvasHeightW, ai_distanceToBarW, ai_barHeightW);
-      return 0;
     }
   }
 
-  //Init of a canvas, a bird and a barrier
-  char canvas[canvasx][canvasy];
-  Bird bird;
-  if(!birdInit(&bird))
-    return -1;
-  Barrier bar;
 
   //Time init (for rand(), time difference calculation etc.)
   time_t t = 0;
@@ -348,13 +382,19 @@ int main(int argc, char **argv){
   bool gameOver = false;
 
   while(1){
-    //Check, if the command to jump has been given
-    if((!ai && jump()) || (ai && ai_jump()))
-      bird.fall_speed = -jumpHeight;
-
-    //Check, if bird isn't dead
-    if(!checkBird(bird, &bar, &score))
-      break;
+    for(int i = 0; i < birdsCount; i++){
+      //Check, if the command to jump has been given
+      if((!ai && jump()) || (ai && ai_jump(birds, i)))
+        birds[i].fall_speed = -jumpHeight;
+      //Check, if bird isn't dead
+      if(birds[i].alive){
+        if(!checkBird(&birds[i], &bar)){
+          birds[i].alive = false;
+          printf("Bird %d died. Score: %d\n", i, birds[i].score);
+        }
+      }
+    }
+    checkBar(&bar, birds, birdsCount);
 
     //Only update the screen "once in a while"
     gettimeofday(&actTime, NULL);
@@ -365,38 +405,47 @@ int main(int argc, char **argv){
       //Calculate next position of the bird while keeping gravity in mind
       timediff = (u_int64_t)actTime.tv_sec - (u_int64_t)lastCheck.tv_sec;
       gettimeofday(&lastCheck, NULL);
-      bird.fall_speed += timediff/4.0 + 0.3;
-      bird.y = bird.y + bird.fall_speed;
+      for(int i = 0; i < birdsCount; i++){
+        birds[i].fall_speed += timediff/4.0 + 0.3;
+        birds[i].y = birds[i].y + birds[i].fall_speed;
 
-      //Update variables for AI
-      if(ai){
-        ai_birdSpeed = bird.fall_speed;
-        ai_birdHeight = bird.y;
-        ai_distanceToBar = (bar.x1 + bar.x2)/2 - birdx;
+        birds[i].stats[birdSpeedI] = birds[i].fall_speed;
+        birds[i].stats[birdHeightI] = birds[i].y;
+        birds[i].stats[distanceToBarI] = (bar.x1 + bar.x2)/2 - birdx;
+
+        //Update canvas in memory
+        updateBird(&birds[i]);
+        updateBar(&bar);
       }
-
-      //Update canvas in memory
-      updateBird(&bird);
-      updateBar(&bar);
 
       //Print updated canvas
       if(!background){
-        printCanvas(canvas, bird, bar);
+        printCanvas(canvas, birds, birdsCount, bar);
       }
 
       //Print stats
-      if(!background){
-        printf("Score = %d\n", score);
+      if(!background && birdsCount == 1){
+        printf("Score = %d\n", birds[0].score);
         printf("Canvas Height: %d\nSpeed: %g\nHeight: %g\nDistance to next bar: %g\nNext bar height: %d\n",
-            ai_canvasHeight, ai_birdSpeed, ai_birdHeight, ai_distanceToBar, ai_barHeight);
+            canvasHeight, birds[0].stats[birdSpeedI], 
+            birds[0].stats[birdHeightI], birds[0].stats[distanceToBarI], 
+            barHeight);
       }
+
+      //Check if a bird is alive
+      gameOver = true;
+      for(int i = 0; i < birdsCount; i++)
+        if(birds[i].alive)
+          gameOver = false;
+      if(birds[0].alive)
+        gameOver = false;
     }
   }
 
   //Save the weights that lead to successful game (score>0)
-  if(ai && score > 0)
-    ai_printWeights(score);
+  if(ai)
+    ai_printWeights(birds, birdsCount);
 
-  freeBirdPixels(bird);
+  freeBirds(birds, birdsCount);
   return 0;
 }
