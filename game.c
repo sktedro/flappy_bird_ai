@@ -9,7 +9,7 @@
 #include <math.h>
 
 
-#define ai 0 //Toggle AI instead of the user playing the game
+#define ai 1 //Toggle AI instead of the user playing the game
 #define aiDebug 0 //Will print AI weights
 #define background 0 //Toggle running on background (only data, no "images")
 
@@ -203,8 +203,10 @@ void printCanvas(char canvas[canvasx][canvasy], Bird *bird, int birdsCount, Barr
   for(int i = 0; i < canvasx; i++)
     for(int j = 0; j < canvasy; j++)
       canvas[i][j] = ' ';
-  for(int i = 0; i < birdsCount; i++)
-    printBird(canvas, bird[i]);
+  for(int i = 0; i < birdsCount; i++){
+    if(bird[i].alive)
+      printBird(canvas, bird[i]);
+  }
   printBarrier(canvas, bar);
 
   system("clear");
@@ -243,7 +245,7 @@ bool ai_jump(Bird *birds, int i){
   return false;
 }
 
-bool ai_getWeights(int batch, Bird *birds, int birdCount){
+bool ai_getWeights(int batch, Bird *birds, int birdsCount){
   FILE *f;
   char *buffer;
   size_t bufferSize;
@@ -276,19 +278,20 @@ bool ai_getWeights(int batch, Bird *birds, int birdCount){
   char delim = ';';
   char *token;
 
-  for(int l = 0; l < birdCount; l++){
+  for(int l = 0; l < birdsCount; l++){
+    token = NULL;
+    printf("SUP\n"); //TODO
     //Get one line
     for(int i = 0; i < 999; i++){
       line[i] = fgetc(f);
+      line[i+1] = '\0';
       if(line[i] == '\n' || line[i] == EOF)
         break;
     }
     //printf("%s", line);
 
     //Get floats from that line
-    token = strtok(line, &delim); //Skip the first record of the line - score
-    if(!token || token[0] == EOF)
-      return false;
+    token = strtok(line, &delim);
     birds[l].weights[birdSpeedWI] = strtof(token, NULL);
     token = strtok(NULL, &delim);
     birds[l].weights[birdHeightWI] = strtof(token, NULL);
@@ -337,7 +340,18 @@ void ai_printWeights(Bird *birds, int birdsCount){
  */
 
 int main(int argc, char **argv){
-  int batch, setting, birdsCount = 1; //TODO remove setting var
+  int batch, birdsCount = 1;
+
+  //AI initialisation
+  if(ai){
+    if(argc < 3){
+      printf("main.c: Too few arguments\n");
+      return -1;
+    }
+    batch = atoi(argv[1]);
+    birdsCount = atoi(argv[2]);
+  }
+  int prevBirdsCount = birdsCount;
 
   //Init of a canvas, birds and a barrier
   char canvas[canvasx][canvasy];
@@ -350,20 +364,12 @@ int main(int argc, char **argv){
     return -1;
   Bird bird;
 
-  Barrier bar;
+  Barrier bar = {0, 0, 0, 0};
 
-  //AI initialisation
+  //Init AI weights
   if(ai){
-    if(argc < 3){
-      printf("main.c: Too few arguments\n");
+    if(!ai_getWeights(batch, birds, birdsCount))
       return -1;
-    }
-    batch = atoi(argv[1]);
-    birdsCount = atoi(argv[3]);
-    for(int i = 0; i < birdsCount; i++){
-      if(!ai_getWeights(batch, birds, birdsCount))
-        return -1;
-    }
     if(aiDebug){
       printf("File: %s\n", filename);
     }
@@ -381,7 +387,8 @@ int main(int argc, char **argv){
   int score = -1;
   bool gameOver = false;
 
-  while(1){
+  while(!gameOver){
+    checkBar(&bar, birds, birdsCount);
     for(int i = 0; i < birdsCount; i++){
       //Check, if the command to jump has been given
       if((!ai && jump()) || (ai && ai_jump(birds, i)))
@@ -394,7 +401,6 @@ int main(int argc, char **argv){
         }
       }
     }
-    checkBar(&bar, birds, birdsCount);
 
     //Only update the screen "once in a while"
     gettimeofday(&actTime, NULL);
@@ -414,12 +420,14 @@ int main(int argc, char **argv){
         birds[i].stats[distanceToBarI] = (bar.x1 + bar.x2)/2 - birdx;
 
         //Update canvas in memory
-        updateBird(&birds[i]);
-        updateBar(&bar);
+        if(!background){
+          updateBird(&birds[i]);
+        }
       }
 
       //Print updated canvas
       if(!background){
+        updateBar(&bar);
         printCanvas(canvas, birds, birdsCount, bar);
       }
 
@@ -432,13 +440,11 @@ int main(int argc, char **argv){
             barHeight);
       }
 
-      //Check if a bird is alive
+      //Check if at least one bird is alive
       gameOver = true;
       for(int i = 0; i < birdsCount; i++)
         if(birds[i].alive)
           gameOver = false;
-      if(birds[0].alive)
-        gameOver = false;
     }
   }
 
