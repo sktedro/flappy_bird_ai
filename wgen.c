@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <time.h>
 
+#define printData 0
+
 FILE *f_i;
 FILE *f_o;
 
@@ -17,45 +19,37 @@ char delim = ';';
 void printWeights(char *buffer){
   snprintf(buffer, 20, "%f;", ai_birdSpeedW);
   fputs(buffer, f_i);
-  printf("%s", buffer);
+  if(printData)
+    printf("%s", buffer);
   snprintf(buffer, 20, "%f;", ai_birdHeightW);
   fputs(buffer, f_i);
-  printf("%s", buffer);
+  if(printData)
+    printf("%s", buffer);
   snprintf(buffer, 20, "%f;", ai_canvasHeightW);
   fputs(buffer, f_i);
-  printf("%s", buffer);
+  if(printData)
+    printf("%s", buffer);
   snprintf(buffer, 20, "%f;", ai_distanceToBarW);
   fputs(buffer, f_i);
-  printf("%s", buffer);
+  if(printData)
+    printf("%s", buffer);
   snprintf(buffer, 20, "%f", ai_barHeightW);
   fputs(buffer, f_i);
   fputc('\n', f_i);
-  printf("%s\n", buffer);
+  if(printData)
+    printf("%s\n", buffer);
 }
 
-bool getLastWeights(int num){
-  /*
-  for(int i = 0; i < num - 1; i++){
-    char c = ' ';
-    while(c != '\n'){
-      c = fgetc(f_o);
-      if(c == EOF)
-        break;
+bool getLastWeights(int num, char *line, char *token){
+  for(int i = 0; i < 999; i++){
+    line[i] = fgetc(f_o);
+    if(line[i] == '\n' || line[i] == EOF){
+      line[i] = '\0';
+      break;
     }
   }
-  */
 
-  char *line = malloc(1000);
-  for(int i = 0; i < 1000; i++){
-    line[i] = fgetc(f_o);
-    if(line[i] == '\n' || line[i] == EOF)
-      break;
-  }
-
-  char *token = strtok(line, &delim);
-  if(!token || token[0] == EOF)
-    return false;
-  strtol(token, NULL, 10);
+  token = strtok(line, &delim); //Skip score data
   token = strtok(NULL, &delim);
   ai_birdSpeedW = strtof(token, NULL);
   token = strtok(NULL, &delim);
@@ -66,6 +60,7 @@ bool getLastWeights(int num){
   ai_distanceToBarW = strtof(token, NULL);
   token = strtok(NULL, &delim);
   ai_barHeightW = strtof(token, NULL);
+  return true;
 }
 
 int main(int argc, char **argv){
@@ -96,7 +91,8 @@ int main(int argc, char **argv){
   filename_o[16] = (lastBatch - 100*hundreds - 10*tens) + '0';
 
   f_i = fopen(filename_i, "a");
-  printf("%s\n", filename_i);
+  if(printData)
+    printf("%s\n", filename_i);
   if(f_i == NULL){
     f_i = fopen(filename_i, "w");
     if(f_i == NULL){
@@ -126,8 +122,13 @@ int main(int argc, char **argv){
 
   for(int i = 0; i < num; i++){
     ai_birdSpeedW = ai_birdHeightW = ai_canvasHeightW = ai_distanceToBarW = ai_barHeightW = 0;
-    if(batch != 1)
-      getLastWeights(i);
+    if(batch != 1){
+      char *line = malloc(1000);
+      char *token = 0;
+      if(!getLastWeights(i, line, token))
+        return 0;
+      free(line);
+    }
     for(int j = 0; j < mult; j++){
       if(rand()%2 == 0)
         ai_birdSpeedW += (rand()%1000000)/1000000.0*fluctuation;

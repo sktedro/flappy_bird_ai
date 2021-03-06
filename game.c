@@ -343,17 +343,23 @@ int main(int argc, char **argv){
   canvasHeight = canvasy;
 
   Bird *birds = malloc(birdsCount * sizeof(Bird));
-  if(!birds)
+  if(!birds){
+    freeBirds(birds, birdsCount);
     return -1;
-  if(!birdInit(birds, birdsCount))
+  }
+  if(!birdInit(birds, birdsCount)){
+    freeBirds(birds, birdsCount);
     return -1;
+  }
   Bird bird;
 
   Barrier bar = {0, 0, 0, 0};
 
   //Init AI weights
-  if(ai && !ai_getWeights(batch, birds, birdsCount))
+  if(ai && !ai_getWeights(batch, birds, birdsCount)){
+    freeBirds(birds, birdsCount);
     return -1;
+  }
 
 
   //Time init (for rand(), time difference calculation etc.)
@@ -370,8 +376,9 @@ int main(int argc, char **argv){
   while(!gameOver){
     checkBar(&bar, birds, birdsCount);
     for(int i = 0; i < birdsCount; i++){
-      //Check, if the command to jump has been given
-      if((!ai && jump()) || (ai && ai_jump(birds, i)))
+      //Check, if the command to jump has been given (only after nextUpdate -
+      //initialising the values)
+      if(nextUpdate != 0 && ((!ai && jump()) || (ai && ai_jump(birds, i))))
         birds[i].fall_speed = -jumpHeight;
       //Check, if bird isn't dead
       if(birds[i].alive){

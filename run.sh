@@ -14,7 +14,18 @@ wgenPath=$buildFolder"wgen"
 sortPath=$buildFolder"sort"
 gamePath=$buildFolder"game"
 
+echo Welcome, I am Tedro\'s flappy bird AI!
+echo First, I\'ll compile the files for you:
+echo
 eval make
+echo
+echo Good. Now\'s the time for me to practice
+echo
+echo Starting with batch $batch, I will play with $birds birds 
+echo until I have $wantedRecords successful outputs. 
+echo Then I will go on to the next batch automatically. 
+echo You just sit tight.
+echo
 
 while true; do
   #GENERATE INPUT AND OUTPUT FILE NAMES
@@ -50,12 +61,24 @@ while true; do
     eval $wgenPath $batch $birds 1
 
     #RUN THE GAME FOR EVERY INPUT WEIGHT
+    echo Now have $recordLines out of $wantedRecords output weight sets
     echo Running batch $batch, run $run.
     eval $gamePath $batch $birds
 
     #COUNT OUTPUT WEIGHT SETS EVERY ITERATION
     recordLines=`wc -l $recordsPath | cut -d' ' -f 1`
   done
+
+  #SORT THE OUTPUT
   eval $sortPath $recordsPath
+
+  echo Batch successfully finished with $recordLines records
+
+  IFS=';' read -r bestScore b < $recordsPath
+  echo The most successful bird of batch $batch flew through $bestScore barriers!
+
   batch=$((batch+1))
+  echo
+  echo ===== Continuing with batch $batch =====
+  echo
 done
