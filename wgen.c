@@ -69,8 +69,8 @@ bool getLastWeights(int num){
 }
 
 int main(int argc, char **argv){
-  if(argc < 3){
-    printf("./weightGen [batch] [how many]\n");
+  if(argc < 4){
+    printf("./weightGen [batch] [how many] [multiplier]\n");
     return -1;
   }
 
@@ -81,6 +81,7 @@ int main(int argc, char **argv){
   int lastBatch = batch - 1;
   int num = atoi(argv[2]);
   float range = 1/(batch);
+  int mult = atoi(argv[3]);
 
   int hundreds = batch/100;
   int tens = (batch - 100*hundreds)/10;
@@ -120,7 +121,8 @@ int main(int argc, char **argv){
   if(batch != 1)
     fluctuation = 1.0/(3.0*batch) + 1.0/(4.0*batch);
 
-  int mult = pow(batch, 3); //How many new weight sets will be generated using one successful weight set
+  if(mult == 0)
+    mult = pow(batch, 3); //How many new weight sets will be generated using one successful weight set
 
   for(int i = 0; i < num; i++){
     ai_birdSpeedW = ai_birdHeightW = ai_canvasHeightW = ai_distanceToBarW = ai_barHeightW = 0;

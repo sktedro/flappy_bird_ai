@@ -53,8 +53,14 @@ sh autorun.sh [batch number] [desired amount of outputs]
 ./build/sort [] []
   - AI Output sorter - sorts weight sets based on score that was achieved using that set
 
-./build/wgen [batch] [desired amount of generated weights]
+./build/wgen [batch] [amount of weights from previous batch to use] [multiplier]
   - AI Weight generator
   It generates weights into ../data/weightsXXX_i in format: float;float;float;float;float
   For batches higher than 1 it takes data from previous batch (weightsXXX_o)
   and randomly adds or substracts fractions of 1.
+  If multiplier is zero, it will generate exponentially more weight sets with
+  the batch number rising. If multiplier is 1, for one output, one input will
+  be generated and so on.
+  './build/wgen 3 100 0' will take first 100 lines of ../data/weights002_o and
+  for each line generate 100*(3^2) weight sets in ../data/weights003_i
+  
