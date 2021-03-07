@@ -1,7 +1,7 @@
 /*
  * Toggles running the AI without drawing the game
  */
-#define background 0
+#define background 1
 
 /* 
  * First barriers will not be randomly generated

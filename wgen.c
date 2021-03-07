@@ -54,7 +54,6 @@ int main(int argc, char **argv){
   int batch = atoi(argv[1]);
   int lastBatch = batch - 1;
   int num = atoi(argv[2]);
-  float range = 1/(batch);
   int mult = atoi(argv[3]);
 
   int hundreds = batch/100;

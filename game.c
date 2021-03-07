@@ -96,8 +96,8 @@ void newBar(Barrier *bar, int highestScore){
     bar->height = rand()%(canvasy - 2*barGap) + barGap;
   bar->highy = bar->height + barGap/2;
   bar->lowy = bar->height - barGap/2;
-  bar->x1 = bar->x1 = canvasx - 1;
-  bar->x2 = bar->x2 = canvasx + barWidth;
+  bar->x1 = canvasx - 1;
+  bar->x2 = canvasx + barWidth;
 }
 
 void printBarrier(char canvas[canvasx][canvasy], Barrier bar){
@@ -153,23 +153,6 @@ bool birdInit(Bird *bird, int birdsCount){
 void printBird(char canvas[canvasx][canvasy], Bird bird){
   if(bird.y >= canvasy && bird.y < 0)
     return;
-  //TODO fuj to pole. Nechcem ho deklarovat tak casto
-  int pixels[birdPixels][2] = {
-    {birdx+3, bird.y},
-    {birdx-3, bird.y},
-    {birdx+2, bird.y},
-    {birdx-2, bird.y},
-    {birdx+2, bird.y+1},
-    {birdx-2, bird.y+1},
-    {birdx+2, bird.y-1},
-    {birdx-2, bird.y-1},
-    {birdx+1, bird.y+1},
-    {birdx-1, bird.y+1},
-    {birdx+1, bird.y-1},
-    {birdx-1, bird.y-1},
-    {birdx, bird.y+1},
-    {birdx, bird.y-1}
-  };
   for(int i = 0; i < birdPixels; i++){
     for(int j = 0; j < 2; j++){
       canvas[bird.pixels[i][0]][bird.pixels[i][1]] = '%';
@@ -191,9 +174,10 @@ void checkBar(Barrier *bar, Bird *birds, int birdsCount, int *highestScore){
 }
 
 bool checkBird(Bird *bird, Barrier *bar){
-  if(bird->y < 0 || bird->y > canvasy){
+  if(bird->y < 0 || bird->y >= canvasy)
     return false;
-  }
+  if(bird->pixels[0][0] < bar->x1 || bird->pixels[1][0] > bar->x2) //Just for optimalisation
+    return true;
   for(int i = 0; i < birdPixels; i++){
     for(int j = 0; j < 2; j++){
       if(bird->pixels[i][0] >= bar->x1 && bird->pixels[i][0] <= bar->x2){
@@ -271,9 +255,7 @@ bool ai_jump(Bird *bird){
 
 bool ai_getWeights(int batch, Bird *birds, int birdsCount){
   FILE *f;
-  size_t bufferSize;
-  char *buffer, *token;
-  char *line = malloc(1000);
+  char *token, *line = malloc(1000);
   if(!line)
     return false;
 
@@ -353,8 +335,8 @@ void checkGameStatus(Bird *birds, bool *gameOver, int birdsCount){
  */
 
 int main(int argc, char **argv){
-  int batch, birdsCount = 1, score = -1, highestScore = -1;
-  bool gameOver = false;
+  int batch, birdsCount = 1, highestScore = -1;
+  bool gameOver = false, ai_checkJump = true;
   if(argc < 3){
     ai = false;
   }else{
@@ -364,7 +346,7 @@ int main(int argc, char **argv){
 
   //Init of a canvas, a barrier and birds
   char canvas[canvasx][canvasy];
-  Barrier bar = {0, 0, 0, 0};
+  Barrier bar = {0, 0, 0, 0, 0};
   Bird *birds = malloc(birdsCount * sizeof(Bird));
   if(!birds || !birdInit(birds, birdsCount)){
     freeBirds(birds, birdsCount);
@@ -382,17 +364,25 @@ int main(int argc, char **argv){
   srand((unsigned) time(&t));
   gettimeofday(&actTime, NULL);
   gettimeofday(&lastCheck, NULL);
-  u_int64_t nextUpdate = 0, timediff = 0, time = actTime.tv_usec + actTime.tv_sec*1000000;
+  u_int64_t nextUpdate = 0, 
+            nextJumpCheck = 0,
+            timediff = 0, 
+            time = actTime.tv_usec + actTime.tv_sec*1000000;
 
   //Main game cycle
   while(!gameOver){
     checkBar(&bar, birds, birdsCount, &highestScore);
 
     for(int i = 0; i < birdsCount; i++){
-      //Check, if the command to jump has been given
-      if(nextUpdate != 0 && ((!ai && jump()) || (ai && ai_jump(&birds[i]))))
-        birds[i].fallSpeed = -jumpHeight;
-
+      //Check, if the command to jump has been given by user (AI jump command
+      //is only checked once in a while to optimise)
+      if(nextUpdate != 0){
+        if(!ai && jump())
+          birds[i].fallSpeed = -jumpHeight;
+        //Check, if AI wants to jump
+        if(ai_checkJump && ai_jump(&birds[i]))
+          birds[i].fallSpeed = -jumpHeight;
+      }
       //Check, if bird isn't dead
       if(birds[i].alive){
         if(!checkBird(&birds[i], &bar)){
@@ -405,6 +395,14 @@ int main(int argc, char **argv){
       }
     }
 
+    //Only check if AI wants to jump every 1ms to optimise
+    if(ai_checkJump){
+      ai_checkJump = false;
+      nextJumpCheck = time + 1000; 
+    }else{
+      ai_checkJump = ai && nextJumpCheck <= time;
+    }
+
     //Only update the screen "once in a while"
     gettimeofday(&actTime, NULL);
     time = actTime.tv_usec + actTime.tv_sec*1000000;
@@ -413,6 +411,7 @@ int main(int argc, char **argv){
       nextUpdate = time + 200*speed;
       timediff = (time - (u_int64_t)lastCheck.tv_usec - (u_int64_t)lastCheck.tv_sec*1000000)/1000000;
       gettimeofday(&lastCheck, NULL);
+
 
       //Update positions and stats of birds and the bar and check for collision
       for(int i = 0; i < birdsCount; i++)
