@@ -129,7 +129,7 @@ bool birdInit(Bird *bird, int birdsCount){
   for(int i = 0; i < birdsCount; i++){
     bird[i].alive = true;
     bird[i].score = -1;
-    bird[i].y = canvasy/2;
+    bird[i].y = canvasy/2 - 1;
     bird[i].fallSpeed = 0;
     bird[i].pixels = malloc(birdPixels*sizeof(void*));
     if(!bird[i].pixels)
@@ -298,12 +298,17 @@ bool ai_getWeights(int batch, Bird *birds, int birdsCount){
   return true;
 }
 
-void ai_exportWeights(Bird *birds, int birdsCount){
+void ai_exportWeights(Bird *birds, int birdsCount, int batch){
   filename[18] = 'o';
   FILE *f = fopen(filename, "a");
   char *buffer = malloc(1000);
+  bool export = false;
   for(int i = 0; i < birdsCount; i++){
-    if(birds[i].score > 0){
+    if(batchMeansLimit)
+      export = birds[i].score >= batch;
+    else
+      export = birds[i].score > 0;
+    if(export){
       snprintf(buffer, 100, "%d%c", birds[i].score, delim);
       fputs(buffer, f);
       for(int j = 0; j < weightsCount; j++){
@@ -439,7 +444,7 @@ int main(int argc, char **argv){
 
   //Save the weights that lead to successful game (score>0)
   if(ai)
-    ai_exportWeights(birds, birdsCount);
+    ai_exportWeights(birds, birdsCount, batch);
 
   freeBirds(birds, birdsCount);
   return 0;

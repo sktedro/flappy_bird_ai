@@ -3,6 +3,12 @@
  */
 #define background 1
 
+/*
+ * Only weight sets that resulted in score higher or equal to the actual batch
+ * number will be exported 
+ */
+#define batchMeansLimit 1
+
 /* 
  * First barriers will not be randomly generated
  * this is to prevent them from getting generated in the same line
