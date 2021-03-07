@@ -27,6 +27,7 @@
 bool ai = true; //Is the AI or the user playing?
 
 char filename[] = "./data/weightsXXX_i";
+char delim = '|';
 
 struct timeval lastCheck, actTime;
 
@@ -58,10 +59,10 @@ typedef struct{
 enum birdStats{yI, fallSpeedI, xToNextBarI, yToNextBarI};
 
 void ai_generateAiStats(Bird *bird){
-  bird->ai_stats[yI] = (bird->stats[yI])/canvasy;
+  bird->ai_stats[yI] = (bird->stats[yI])/(canvasy - barGap);
   bird->ai_stats[fallSpeedI] = bird->stats[fallSpeedI];
   bird->ai_stats[xToNextBarI] = 1/(bird->stats[xToNextBarI]); 
-  bird->ai_stats[yToNextBarI] = 2*(bird->stats[yToNextBarI])/canvasy;
+  bird->ai_stats[yToNextBarI] = (2*(bird->stats[yToNextBarI]))/canvasy;
 }
 
 void updateBird(Bird *birds, Barrier bar, int i, u_int64_t timediff){
@@ -260,8 +261,8 @@ bool ai_jump(Bird *bird){
 bool ai_getWeights(int batch, Bird *birds, int birdsCount){
   FILE *f;
   size_t bufferSize;
-  char delim = ';';
-  char *buffer, *token, *line = malloc(1000);
+  char *buffer, *token;
+  char *line = malloc(1000);
   if(!line)
     return false;
 
@@ -284,9 +285,10 @@ bool ai_getWeights(int batch, Bird *birds, int birdsCount){
     //Load float numbers from one line
     for(int i = 0; i < 999; i++){
       line[i] = fgetc(f);
-      line[i+1] = '\0';
-      if(line[i] == '\n' || line[i] == EOF)
+      if(line[i] == '\n' || line[i] == EOF){
+        line[i] = '\0';
         break;
+      }
     }
     for(int i = 0; i < weightsCount; i++){
       if(i == 0)
@@ -309,10 +311,13 @@ void ai_exportWeights(Bird *birds, int birdsCount){
   char *buffer = malloc(1000);
   for(int i = 0; i < birdsCount; i++){
     if(birds[i].score > 0){
-      snprintf(buffer, 100, "%d;", birds[i].score);
+      snprintf(buffer, 100, "%d%c", birds[i].score, delim);
       fputs(buffer, f);
       for(int j = 0; j < weightsCount; j++){
-        snprintf(buffer, 100, "%f;", birds[i].weights[j]);
+        if(j != weightsCount - 1)
+          snprintf(buffer, 100, "%f%c", birds[i].weights[j], delim);
+        else
+          snprintf(buffer, 100, "%f", birds[i].weights[j]);
         fputs(buffer, f);
       }
       fputc('\n', f);

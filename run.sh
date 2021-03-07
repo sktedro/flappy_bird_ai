@@ -74,7 +74,7 @@ while true; do
 
   echo Batch successfully finished with $recordLines records
 
-  IFS=';' read -r bestScore b < $recordsPath
+  IFS='|' read -r bestScore b < $recordsPath
   echo The most successful bird of batch $batch flew through $bestScore barriers!
 
   batch=$((batch+1))

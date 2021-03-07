@@ -7,21 +7,21 @@
 
 #define printData 0
 
-#define weightsCount 5
+#define weightsCount 4
 
 FILE *f_i;
 FILE *f_o;
 
 char filename_i[] = "./data/weightsXXX_i";
 char filename_o[] = "./data/weightsXXX_o";
-char delim = ';';
+char delim = '|';
 
 void printWeights(char *buffer, float stats[weightsCount]){
   for(int i = 0; i < weightsCount; i++){
-    if(i != weightsCount - 1)
-      snprintf(buffer, 20, "%f;", stats[i]);
-    else //For the last records, don't print ';', print new line instead
+    if(i == weightsCount - 1)
       snprintf(buffer, 20, "%f\n", stats[i]);
+    else
+      snprintf(buffer, 20, "%f%c", stats[i], delim);
     if(printData)
       printf("%s", buffer);
     fputs(buffer, f_i);
@@ -114,7 +114,7 @@ int main(int argc, char **argv){
     }
     for(int j = 0; j < mult; j++){
       for(int k = 0; k < weightsCount; k++){
-        if(rand()%2 == 0)
+        if(rand()%2 == 0 || batch == 1)
           stats[k] += (rand()%1000000)/1000000.0*fluctuation;
         else
           stats[k] -= (rand()%1000000)/1000000.0*fluctuation;

@@ -3,12 +3,14 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define weightsCount 5
+#define weightsCount 4
 
 typedef struct{
   int score;
   char *content;
 } Line;
+
+char delim = '|';
 
 //Counts lines in the file
 int getFileLength(FILE *f){
@@ -58,7 +60,7 @@ void getScores(Line *line, int lines){
   for(int i = 0; i < lines; i++){
     for(int j = 0; line[i].content[j] != '\n' && line[i].content[j] != EOF; j++){
       scoreStr[j] = line[i].content[j];
-      if(line[i].content[j] == ';'){
+      if(line[i].content[j] == delim){
         line[i].score = strtol(scoreStr, NULL, 10);
         break;
       }
