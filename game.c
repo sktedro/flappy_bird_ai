@@ -307,7 +307,7 @@ void ai_exportWeights(Bird *birds, int birdsCount, int batch){
     if(batchMeansLimit)
       export = birds[i].score >= batch;
     else
-      export = birds[i].score > 0;
+      export = birds[i].score >= minScoreToExport;
     if(export){
       snprintf(buffer, 100, "%d%c", birds[i].score, delim);
       fputs(buffer, f);

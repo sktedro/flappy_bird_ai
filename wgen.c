@@ -14,6 +14,21 @@ char filename_i[] = "./data/weightsXXX_i";
 char filename_o[] = "./data/weightsXXX_o";
 char delim = '|';
 
+int countLines(){
+  fseek(f_o, 0, SEEK_SET);
+  int count = -1;
+  char c = 'a';
+  while(1){
+    c = fgetc(f_o);
+    if(c == '\n')
+      count++;
+    if(c == EOF)
+      break;
+  }
+  fseek(f_o, 0, SEEK_SET);
+  return count;
+}
+
 void printWeights(char *buffer, float stats[weightsCount]){
   for(int i = 0; i < weightsCount; i++){
     if(i == weightsCount - 1)
@@ -26,20 +41,22 @@ void printWeights(char *buffer, float stats[weightsCount]){
   }
 }
 
-bool getLastWeights(int num, char *line, char *token, float stats[weightsCount]){
+void getLastWeights(int num, char *line, char *token, float stats[weightsCount]){
+  //Load the desired line
   for(int i = 0; i < 999; i++){
     line[i] = fgetc(f_o);
     if(line[i] == '\n' || line[i] == EOF){
       line[i] = '\0';
+      line[i+1] = '\n';
       break;
     }
   }
   token = strtok(line, &delim); //Skip score data
+  //Save the weights
   for(int i = 0; i < weightsCount; i++){
     token = strtok(NULL, &delim);
     stats[i] = strtof(token, NULL);
   }
-  return true;
 }
 
 int main(int argc, char **argv){
@@ -55,6 +72,7 @@ int main(int argc, char **argv){
   int lastBatch = batch - 1;
   int num = atoi(argv[2]);
   int mult = atoi(argv[3]);
+  int linesToGenFrom;
 
   int hundreds = batch/100;
   int tens = (batch - 100*hundreds)/10;
@@ -87,6 +105,7 @@ int main(int argc, char **argv){
       printf("wgen.c: Error locating %s.\n", filename_o);
       return -1;
     }
+    linesToGenFrom = countLines();
   }
 
   char *buffer = malloc(100);
@@ -102,12 +121,18 @@ int main(int argc, char **argv){
   char *line = malloc(1000);
   char *token = 0;
   float stats[weightsCount];
+
   for(int i = 0; i < num; i++){
     for(int j = 0; j < weightsCount; j++)
       stats[j] = 0;
     if(batch != 1){
-      if(!getLastWeights(i, line, token, stats))
-        return 0;
+
+      //If we're at the end of the file to generate from, go to the first line
+      if(i >= linesToGenFrom)
+        fseek(f_o, 0, SEEK_SET);
+
+      getLastWeights(i, line, token, stats);
+
     }
     for(int j = 0; j < mult; j++){
       for(int k = 0; k < weightsCount; k++){
@@ -123,6 +148,7 @@ int main(int argc, char **argv){
       printWeights(buffer, stats);
     }
   }
+
   free(line);
   fclose(f_i);
   if(batch != 1)

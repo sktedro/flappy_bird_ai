@@ -5,9 +5,15 @@
 
 /*
  * Only weight sets that resulted in score higher or equal to the actual batch
- * number will be exported 
+ * number will be exported. If this is zero, 'minScoreToExport' will be used
  */
 #define batchMeansLimit 1
+
+/*
+ * Or you can just set your limit manually - minimum score for the record to be
+ * exported
+ */
+#define minScoreToExport 1
 
 /* 
  * First barriers will not be randomly generated
@@ -16,12 +22,11 @@
 #define firstBars 1 
   
 
+
 /*
  * Print generated data by weight generator
  */
 #define wgen_printData 0
-
-
 
 
 
