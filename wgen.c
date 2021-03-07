@@ -5,9 +5,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define printData 0
-
-#define weightsCount 4
+#include "settings.h"
 
 FILE *f_i;
 FILE *f_o;
@@ -22,7 +20,7 @@ void printWeights(char *buffer, float stats[weightsCount]){
       snprintf(buffer, 20, "%f\n", stats[i]);
     else
       snprintf(buffer, 20, "%f%c", stats[i], delim);
-    if(printData)
+    if(wgen_printData)
       printf("%s", buffer);
     fputs(buffer, f_i);
   }
@@ -72,7 +70,7 @@ int main(int argc, char **argv){
   filename_o[16] = (lastBatch - 100*hundreds - 10*tens) + '0';
 
   f_i = fopen(filename_i, "a");
-  if(printData)
+  if(wgen_printData)
     printf("%s\n", filename_i);
   if(f_i == NULL){
     f_i = fopen(filename_i, "w");

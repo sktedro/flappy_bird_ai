@@ -8,10 +8,9 @@
 #include <curses.h>
 #include <math.h>
 
-#define weightsCount 4 //Amount of AI weights
+#include "settings.h"
 
 #define aiDebug 0 //Will print AI weights
-#define background 0 //Toggle running on background (only data, no "images")
 
 #define speed 100 //Flight speed (x direction) - the higher the slower
 #define jumpHeight 1.2
@@ -85,8 +84,16 @@ void updateBird(Bird *birds, Barrier bar, int i, u_int64_t timediff){
  * Barrier functions
  */
 
-void newBar(Barrier *bar){
-  bar->height = rand()%(canvasy - 2*barGap) + barGap;
+void newBar(Barrier *bar, int highestScore){
+  if(firstBars && highestScore <= 1){ //if... then the first three bars will be predefined
+    if(highestScore == -1)
+      bar->height = barGap;
+    else if(highestScore == 0)
+      bar->height = canvasy - barGap - 1;
+    else if(highestScore == 1)
+      bar->height = canvasy/2;
+  }else
+    bar->height = rand()%(canvasy - 2*barGap) + barGap;
   bar->highy = bar->height + barGap/2;
   bar->lowy = bar->height - barGap/2;
   bar->x1 = bar->x1 = canvasx - 1;
@@ -170,12 +177,14 @@ void printBird(char canvas[canvasx][canvasy], Bird bird){
   }
 }
 
-void checkBar(Barrier *bar, Bird *birds, int birdsCount){
+void checkBar(Barrier *bar, Bird *birds, int birdsCount, int *highestScore){
   if(bar->x2 < 0){
-    newBar(bar);
+    newBar(bar, *highestScore);
     for(int i = 0; i < birdsCount; i++){
       if(birds[i].alive){
         (birds[i].score)++;
+        if(birds[i].score > *highestScore)
+          *highestScore = birds[i].score;
       }
     }
   }
@@ -210,7 +219,7 @@ void freeBirds(Bird *birds, int birdsCount){
  * Other game functions
  */
 
-void printOut(char canvas[canvasx][canvasy], Bird *bird, int birdsCount, Barrier bar){
+void printOut(char canvas[canvasx][canvasy], Bird *bird, int birdsCount, Barrier bar, int highestScore){
   for(int i = 0; i < canvasx; i++)
     for(int j = 0; j < canvasy; j++)
       canvas[i][j] = ' ';
@@ -227,10 +236,12 @@ void printOut(char canvas[canvasx][canvasy], Bird *bird, int birdsCount, Barrier
     }
     printf("\n");
   }
-  if(birdsCount = 1){
+  if(birdsCount == 1){
     printf("Score: %d\n\nFall speed of the bird: %g\nHeight of the bird: %g\nX distance to next bar: %g\nY distance to next bar: %g\n",
         bird[0].score, bird[0].fallSpeed, bird[0].y, bird[0].xToNextBar, bird[0].yToNextBar);
   }
+  else
+    printf("\nHighest score: %d\n", highestScore);
 }
 
 bool jump(){
@@ -342,13 +353,13 @@ void checkGameStatus(Bird *birds, bool *gameOver, int birdsCount){
  */
 
 int main(int argc, char **argv){
-  int batch, birdsCount = 1, prevBirdsCount = 1, score = -1;
+  int batch, birdsCount = 1, score = -1, highestScore = -1;
   bool gameOver = false;
   if(argc < 3){
     ai = false;
   }else{
     batch = atoi(argv[1]);
-    birdsCount = prevBirdsCount = atoi(argv[2]);
+    birdsCount = atoi(argv[2]);
   }
 
   //Init of a canvas, a barrier and birds
@@ -375,7 +386,7 @@ int main(int argc, char **argv){
 
   //Main game cycle
   while(!gameOver){
-    checkBar(&bar, birds, birdsCount);
+    checkBar(&bar, birds, birdsCount, &highestScore);
 
     for(int i = 0; i < birdsCount; i++){
       //Check, if the command to jump has been given
@@ -413,7 +424,7 @@ int main(int argc, char **argv){
 
       //Print updated canvas and stats
       if(!background)
-        printOut(canvas, birds, birdsCount, bar);
+        printOut(canvas, birds, birdsCount, bar, highestScore);
 
       //Print stats that are fed to AI
       if(ai && aiDebug){

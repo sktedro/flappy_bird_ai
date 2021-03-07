@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define weightsCount 4
+#include "settings.h"
 
 typedef struct{
   int score;
