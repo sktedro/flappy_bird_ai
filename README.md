@@ -5,6 +5,8 @@ Author: Tedro
 Goal is to create a flappy bird game playable in terminal and then implement an
 AI to teach itself to play the game for eternity.
 
+Watch the demonstration video: https://youtu.be/CAuzvRd6lnI
+
 To just play the game, type 'make' and './build/game'.
 
 To run the AI, run for example 'sh run.sh 1 1 1', which will run AI learning
