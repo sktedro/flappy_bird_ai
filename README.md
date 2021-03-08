@@ -9,7 +9,7 @@ To just play the game, type 'make' and './build/game'.
 
 To run the AI, run for example 'sh run.sh 1 1 1', which will run AI learning
 starting with batch one, with one bird per game and while requiring at least
-one bird achieving score higher or equal to the batch number to continue to next barch.
+one bird achieving score higher or equal to the batch number to continue to next batch.
 
 For more detailed explaination, read instructions below.
 
