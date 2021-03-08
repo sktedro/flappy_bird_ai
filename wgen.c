@@ -29,7 +29,7 @@ int countLines(){
   return count;
 }
 
-void printWeights(char *buffer, float stats[weightsCount]){
+void printWeights(char *buffer, double stats[weightsCount]){
   for(int i = 0; i < weightsCount; i++){
     if(i == weightsCount - 1)
       snprintf(buffer, 20, "%f\n", stats[i]);
@@ -41,7 +41,7 @@ void printWeights(char *buffer, float stats[weightsCount]){
   }
 }
 
-void getLastWeights(int num, char *line, char *token, float stats[weightsCount]){
+void getLastWeights(int num, char *line, char *token, double stats[weightsCount]){
   //Load the desired line
   for(int i = 0; i < 999; i++){
     line[i] = fgetc(f_o);
@@ -110,9 +110,11 @@ int main(int argc, char **argv){
 
   char *buffer = malloc(100);
 
-  float fluctuation = 1.0; //0.9 to 0.00001 (last batch)
+  double fluctuation = 1.0; //0.9 to 0.00001 (last batch)
   if(batch != 1)
-    fluctuation = -((log(batch)) / 7.0 + 1.0);
+    fluctuation = 1/(batch*batch + 1);
+    //fluctuation = -(((log(batch)) / 7.0 + 1.0))/2.0;
+    //fluctuation = -((log(batch)) / 7.0 + 1.0); //BEST
     //fluctuation = 1.0/(3.0*batch) + 1.0/(4.0*batch);
 
   if(mult == 0)
@@ -120,7 +122,8 @@ int main(int argc, char **argv){
 
   char *line = malloc(1000);
   char *token = 0;
-  float stats[weightsCount];
+  double stats[weightsCount];
+  double generatedNum;
 
   for(int i = 0; i < num; i++){
     for(int j = 0; j < weightsCount; j++)
@@ -136,14 +139,15 @@ int main(int argc, char **argv){
     }
     for(int j = 0; j < mult; j++){
       for(int k = 0; k < weightsCount; k++){
-        if(rand()%2 == 0 || batch == 1)
-          stats[k] += (rand()%1000000)/1000000.0*fluctuation;
+        generatedNum = (rand()%1000000)/1000000.0*fluctuation;
+        if(rand()%2 == 0)
+          stats[k] += generatedNum;
         else
-          stats[k] -= (rand()%1000000)/1000000.0*fluctuation;
+          stats[k] -= generatedNum;
         if(stats[k] > 1)
           stats[k] = 1;
-        else if(stats[k] < 0)
-          stats[k] = 0;
+        else if(stats[k] < -1)
+          stats[k] = -1;
       }
       printWeights(buffer, stats);
     }
