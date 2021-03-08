@@ -112,7 +112,7 @@ int main(int argc, char **argv){
 
   double fluctuation = 1.0; //0.9 to 0.00001 (last batch)
   if(batch != 1)
-    fluctuation = 2/(batch*batch + 1);
+    fluctuation = 2/(pow(batch, 2) + 1);
     //fluctuation = -(((log(batch)) / 7.0 + 1.0))/2.0;
     //fluctuation = -((log(batch)) / 7.0 + 1.0); //BEST
     //fluctuation = 1.0/(3.0*batch) + 1.0/(4.0*batch);

@@ -11,14 +11,15 @@
 #include "settings.h"
 
 #define aiDebug 0 //Will print AI weights
+#define printStats 0 //Print status of the bird
 
-#define speed 100 //Flight speed (x direction) - the higher the slower
-#define jumpHeight 1.2
+#define speed 50 //Flight speed (x direction) - the higher the slower
+#define jumpHeight 1.1
 
-#define canvasx 100 //Canvas width
+#define canvasx 60 //Canvas width
 #define canvasy 35 //Canvas height
 
-#define birdx 10 //Bird center location from the left
+#define birdx 8 //Bird center location from the left
 #define birdPixels 14 //Don't mind this
 #define barWidth 8 //Width of a single barrier
 #define barGap 10 //Gap between top and bottom barriers
@@ -217,10 +218,11 @@ void printOut(char canvas[canvasx][canvasy], Bird *bird, int birdsCount, Barrier
     }
     printf("\n");
   }
-  if(birdsCount == 1){
+  if(birdsCount == 1 && printStats){
     printf("Score: %d\n\nFall speed of the bird: %g\nHeight of the bird: %g\nX distance to next bar: %g\nY distance to next bar: %g\n",
         bird[0].score, bird[0].fallSpeed, bird[0].y, bird[0].xToNextBar, bird[0].yToNextBar);
-  }
+  }else if(birdsCount == 1 && !printStats)
+    printf("Score: %d\n", bird[0].score);
   else
     printf("\nHighest score: %d\n", highestScore);
 }
@@ -411,7 +413,7 @@ int main(int argc, char **argv){
     time = actTime.tv_usec + actTime.tv_sec*1000000;
 
     if(time > nextUpdate){
-      nextUpdate = time + 200*speed;
+      nextUpdate = time + 250*speed;
       timediff = (time - (u_int64_t)lastCheck.tv_usec - (u_int64_t)lastCheck.tv_sec*1000000)/1000000;
       gettimeofday(&lastCheck, NULL);
 
