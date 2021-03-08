@@ -13,7 +13,7 @@
 #define aiDebug 0 //Will print AI weights
 #define printStats 0 //Print status of the bird
 
-#define speed 50 //Flight speed (x direction) - the higher the slower
+#define speed 100 //Flight speed (x direction) - the higher the slower
 #define jumpHeight 1.1
 
 #define canvasx 60 //Canvas width
