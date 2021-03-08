@@ -1,7 +1,7 @@
 /*
  * Toggles running the AI without drawing the game
  */
-#define background 1
+#define background 0
 
 /*
  * Only weight sets that resulted in score higher or equal to the actual batch
@@ -40,4 +40,4 @@
 /*
  * Amount of weights to use. Changing this needs changes in (probably only) game.c
  */
-#define weightsCount 4
+#define weightsCount 3

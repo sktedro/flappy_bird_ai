@@ -33,14 +33,14 @@ struct timeval lastCheck, actTime;
 typedef struct{
   bool alive;
   int score;
-  float y;
-  float fallSpeed;
-  float xToNextBar;
-  float yToNextBar;
+  double y;
+  double fallSpeed;
+  double xToNextBar;
+  double yToNextBar;
   int **pixels;
-  float stats[weightsCount];
-  float ai_stats[weightsCount]; //stats converted to AI friendly numbers (range 0-1)
-  float weights[weightsCount];
+  double stats[weightsCount];
+  double ai_stats[weightsCount]; //stats converted to AI friendly numbers (range 0-1)
+  double weights[weightsCount];
 } Bird;
 
 typedef struct{
@@ -58,19 +58,15 @@ typedef struct{
 enum birdStats{yI, fallSpeedI, xToNextBarI, yToNextBarI};
 
 void ai_generateAiStats(Bird *bird){
-  bird->ai_stats[yI] = (bird->stats[yI])/(canvasy - barGap);
   bird->ai_stats[fallSpeedI] = bird->stats[fallSpeedI];
-  bird->ai_stats[xToNextBarI] = 1/(bird->stats[xToNextBarI]); 
   bird->ai_stats[yToNextBarI] = (2*(bird->stats[yToNextBarI]))/canvasy;
 }
 
 void updateBird(Bird *birds, Barrier bar, int i, u_int64_t timediff){
   birds[i].fallSpeed += timediff/2.0 + 0.1;
   birds[i].y = birds[i].y + birds[i].fallSpeed;
-  birds[i].stats[0] = birds[i].y;
-  birds[i].stats[1] = birds[i].fallSpeed;
-  birds[i].stats[2] = birds[i].xToNextBar = (bar.x1 + bar.x2)/2 - birdx;
-  birds[i].stats[3] = birds[i].yToNextBar = birds[i].y - bar.height;
+  birds[i].stats[0] = birds[i].fallSpeed;
+  birds[i].stats[1] = birds[i].yToNextBar = birds[i].y - bar.height;
 
   birds[i].pixels[0][1] = birds[i].pixels[1][1] = birds[i].pixels[2][1] = birds[i].pixels[3][1] =
     birds[i].y;
@@ -132,6 +128,7 @@ bool birdInit(Bird *bird, int birdsCount){
     bird[i].y = canvasy/2 - 1;
     bird[i].fallSpeed = 0;
     bird[i].pixels = malloc(birdPixels*sizeof(void*));
+    bird[i].ai_stats[2] = bird[i].stats[2] = 1;
     if(!bird[i].pixels)
       return false;
     for(int j = 0; j < birdPixels; j++){
@@ -244,11 +241,12 @@ bool jump(){
  */
 
 bool ai_jump(Bird *bird){
-  float decision = 0.0;
+  double decision = 0.0;
   ai_generateAiStats(bird);
   for(int j = 0; j < weightsCount; j++)
     decision += bird->ai_stats[j] * bird->weights[j];
-  if(decision > 0.5 * weightsCount)
+  //if(decision > 0.5 * weightsCount)
+  if(decision > 0)
     return true;
   return false;
 }
