@@ -49,7 +49,7 @@ make
   - Run on the background so the project will be built every time anything in the
   directory changes
 
-sh autorun.sh [batch] [amount of input lines to test] [desired amount of outputs]
+sh run.sh [batch] [amount of input lines to test] [desired amount of outputs]
   - AI Trainer
   - Automatically generates weights based on previous batch (or totally randomly
   if batch number is 1), tests these weights in the game and every weight that
